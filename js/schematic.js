@@ -265,8 +265,8 @@ function buildSchematicCore(){
   let deepestY = coldY;
   if(hotY!==null) deepestY = Math.max(deepestY, hotY);
   if(ry!==null) deepestY = Math.max(deepestY, ry);
-  const viewW = Math.max(x, hx) + 70;
-  const canvasH = deepestY + 180;
+  const viewW = (Math.max(x, hx) + 70) / 0.85;
+  const canvasH = (deepestY + 180) / 0.85;
   svg.setAttribute('viewBox','0 0 '+viewW+' '+canvasH);
 
   const usedSymbols = ['damper','fan','coolingCoil','heatingCoil','humidifier','lowLimit','globeValve','vfd','pump','sensorStaticPressure'];
