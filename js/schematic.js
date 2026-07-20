@@ -307,17 +307,18 @@ function buildSchematicCore(){
     s += '<text x="'+ductStart+'" y="'+(coldY-ductH/2-10)+'" font-family="Arial" font-size="10" font-weight="700" fill="'+BAS.textDim+'">SUPPLY SPLITS TO COLD / HOT DECK</text>';
     preforkItems.forEach(it=>{ s += drawStation(it, coldY, ductH); });
     coldLaneItems.forEach(it=>{ s += drawStation(it, coldLaneY, ductH, 'up'); });
+    s += '<g id="highStaticTripIcon" transform="translate('+(ductEnd-60)+','+(coldLaneY-ductH/2-40)+')"></g>';
     // Static pressure sensor on a short stub after the main duct (represents 2/3 down unknown duct length)
     const cStubStart = ductEnd + 12;
     const cStubW = 120;
     s += horizDuctSVG(cStubStart, coldLaneY-ductH/2, cStubW, ductH, null, null, true, true);
+    s += arrowFlowLine(ductEnd, coldLaneY, cStubStart + cStubW, coldLaneY, 'fwd', 'flow_coldSupplyStub', 'flow-fwd');
     s += '<line x1="'+(ductEnd+2)+'" y1="'+(coldLaneY-ductH/2+4)+'" x2="'+(ductEnd+8)+'" y2="'+(coldLaneY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(ductEnd+6)+'" y1="'+(coldLaneY-ductH/2+4)+'" x2="'+(ductEnd+12)+'" y2="'+(coldLaneY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     const cStubCx = cStubStart + cStubW/2;
     s += '<line x1="'+cStubCx+'" y1="'+(coldLaneY-ductH/2)+'" x2="'+cStubCx+'" y2="'+(coldLaneY-ductH/2-20)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(cStubCx-3)+'" y1="'+(coldLaneY-ductH/2-2)+'" x2="'+(cStubCx+3)+'" y2="'+(coldLaneY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(cStubCx-3)+'" y1="'+(coldLaneY-ductH/2-4)+'" x2="'+(cStubCx+3)+'" y2="'+(coldLaneY-ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
-    s += '<g transform="translate('+(cStubCx-9)+','+(coldLaneY-ductH/2-52)+')">'+gfxWrap('sensorStaticPressure', '', 0.55)+'</g>';
     s += '<g id="readout_spStubCold"></g>';
     window._schemSpStubColdCx = cStubCx;
     window._schemSpStubColdY = coldLaneY;
@@ -331,17 +332,18 @@ function buildSchematicCore(){
     const stubStart = ductEnd + 12;
     const stubW = 120;
     s += horizDuctSVG(stubStart, coldY-ductH/2, stubW, ductH, null, null, true, true);
+    s += arrowFlowLine(ductEnd, coldY, stubStart + stubW, coldY, 'fwd', 'flow_coldSupplyStub', 'flow-fwd');
     s += '<line x1="'+(ductEnd+2)+'" y1="'+(coldY-ductH/2+4)+'" x2="'+(ductEnd+8)+'" y2="'+(coldY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(ductEnd+6)+'" y1="'+(coldY-ductH/2+4)+'" x2="'+(ductEnd+12)+'" y2="'+(coldY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     const stubCx = stubStart + stubW/2;
     s += '<line x1="'+stubCx+'" y1="'+(coldY-ductH/2)+'" x2="'+stubCx+'" y2="'+(coldY-ductH/2-20)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(stubCx-3)+'" y1="'+(coldY-ductH/2-2)+'" x2="'+(stubCx+3)+'" y2="'+(coldY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(stubCx-3)+'" y1="'+(coldY-ductH/2-4)+'" x2="'+(stubCx+3)+'" y2="'+(coldY-ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
-    s += '<g transform="translate('+(stubCx-9)+','+(coldY-ductH/2-52)+')">'+gfxWrap('sensorStaticPressure', '', 0.55)+'</g>';
     s += '<g id="readout_spStubMain"></g>';
     window._schemSpStubMainCx = stubCx;
     window._schemSpStubMainY = coldY;
     items.forEach(it=>{ s += drawStation(it, coldY, ductH); });
+    s += '<g id="highStaticTripIcon" transform="translate('+(ductEnd-60)+','+(coldY-ductH/2-40)+')"></g>';
   }
 
   if(showSecondRow && hotItems.length){
@@ -364,17 +366,18 @@ function buildSchematicCore(){
     const hStubStart = hDuctEnd + 12;
     const hStubW = 120;
     s += horizDuctSVG(hStubStart, hotY-ductH/2, hStubW, ductH, null, null, true, true);
+    s += arrowFlowLine(hDuctEnd, hotY, hStubStart + hStubW, hotY, 'fwd', 'flow_hotSupplyStub', 'flow-fwd');
     s += '<line x1="'+(hDuctEnd+2)+'" y1="'+(hotY-ductH/2+4)+'" x2="'+(hDuctEnd+8)+'" y2="'+(hotY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(hDuctEnd+6)+'" y1="'+(hotY-ductH/2+4)+'" x2="'+(hDuctEnd+12)+'" y2="'+(hotY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     const hStubCx = hStubStart + hStubW/2;
     s += '<line x1="'+hStubCx+'" y1="'+(hotY-ductH/2)+'" x2="'+hStubCx+'" y2="'+(hotY-ductH/2-20)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(hStubCx-3)+'" y1="'+(hotY-ductH/2-2)+'" x2="'+(hStubCx+3)+'" y2="'+(hotY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(hStubCx-3)+'" y1="'+(hotY-ductH/2-4)+'" x2="'+(hStubCx+3)+'" y2="'+(hotY-ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
-    s += '<g transform="translate('+(hStubCx-9)+','+(hotY-ductH/2-52)+')">'+gfxWrap('sensorStaticPressure', '', 0.55)+'</g>';
     s += '<g id="readout_spStubHot"></g>';
     window._schemSpStubHotCx = hStubCx;
     window._schemSpStubHotY = hotY;
     hotItems.forEach(it=>{ s += drawStation(it, hotY, ductH, sharedDual?'down':undefined); });
+    s += '<g id="highStaticTripIconHot" transform="translate('+(hDuctEnd-60)+','+(hotY-ductH/2-40)+')"></g>';
   }
   window._schemHotFlip = showSecondRow;
   let returnFanCx=null, returnY=null;
@@ -659,25 +662,29 @@ function updateSchematicReadouts(){
     if(exhaustEl && window._schemExhaustBubbleX!==undefined){ exhaustEl.innerHTML = bubble(window._schemExhaustBubbleX, window._schemExhaustY-20, 26, 'Exhaust Air ('+pn('Exhaust Air','EA')+') Damper', ['EA DPR '+fmt(sim.eaDamperPos,0)+'%', fmt(sim.exhaustCfm,0)+' CFM'], null); }
   }
 
-  // Static pressure sensor info blocks (2/3 duct position)
+  // Static pressure info blocks on the 2/3 stubs (SP only)
   const spTarget = fmt(sp.highStaticSP * 0.8, 2);
-  const effRh = sim.W_supply ? rhFromW(sim.raTemp || 72, sim.W_supply) * 100 : sim.saRH * 100;
   const spStubMainEl = document.getElementById('readout_spStubMain');
   if(spStubMainEl && window._schemSpStubMainCx !== undefined){
-    spStubMainEl.innerHTML = bubble(window._schemSpStubMainCx, window._schemSpStubMainY-30, 60, 'Supply Duct (2/3)', 
-      ['SP '+spTarget+'" w.c.', 'SAT '+fmt(sim.satDisplayTemp,1)+'\u00b0F', 'SA-RH '+fmt(effRh,0)+'%', fmt(sim.supplyCfm,0)+' CFM'], null, 70);
+    spStubMainEl.innerHTML = bubble(window._schemSpStubMainCx, window._schemSpStubMainY-30, 45, 'SP (2/3 Duct)', 
+      [spTarget+'" w.c.'], null, 70);
   }
   const spStubColdEl = document.getElementById('readout_spStubCold');
   if(spStubColdEl && window._schemSpStubColdCx !== undefined){
-    const cdSat = config.ductType==='dual'? sim.coldDeckTemp : sim.satDisplayTemp;
-    spStubColdEl.innerHTML = bubble(window._schemSpStubColdCx, window._schemSpStubColdY-30, 60, 'Cold Deck (2/3)', 
-      ['SP '+spTarget+'" w.c.', 'CD-SAT '+fmt(cdSat,1)+'\u00b0F', 'CD-RH '+fmt(effRh,0)+'%', fmt(sim.supplyCfm,0)+' CFM'], null, 70);
+    spStubColdEl.innerHTML = bubble(window._schemSpStubColdCx, window._schemSpStubColdY-30, 45, 'SP (2/3 Duct)', 
+      [spTarget+'" w.c.'], null, 70);
   }
   const spStubHotEl = document.getElementById('readout_spStubHot');
   if(spStubHotEl && window._schemSpStubHotCx !== undefined){
-    spStubHotEl.innerHTML = bubble(window._schemSpStubHotCx, window._schemSpStubHotY-30, 60, 'Hot Deck (2/3)', 
-      ['SP '+spTarget+'" w.c.', 'HD-SAT '+fmt(sim.hotDeckTemp,1)+'\u00b0F', 'HD-RH '+fmt(effRh,0)+'%', fmt(sim.hotDeckCfm,0)+' CFM'], null, 70);
+    spStubHotEl.innerHTML = bubble(window._schemSpStubHotCx, window._schemSpStubHotY-30, 45, 'SP (2/3 Duct)', 
+      [spTarget+'" w.c.'], null, 70);
   }
+
+  // High static trip indicators
+  const hsTripEl = document.getElementById('highStaticTripIcon');
+  if(hsTripEl) hsTripEl.innerHTML = gfxWrap('lowLimit', latched.highStatic?'active':'', 0.9) + '<text x="0" y="22" font-family="Arial" font-size="7" text-anchor="middle" fill="'+BAS.textDim+'">HI-STAT</text>';
+  const hsTripHotEl = document.getElementById('highStaticTripIconHot');
+  if(hsTripHotEl) hsTripHotEl.innerHTML = gfxWrap('lowLimit', latched.highStatic?'active':'', 0.9) + '<text x="0" y="22" font-family="Arial" font-size="7" text-anchor="middle" fill="'+BAS.textDim+'">HI-STAT</text>';
 }
 
 function buildSchematic(){
