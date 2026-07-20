@@ -196,7 +196,7 @@ function buildSchematicCore(){
   let currentAddY = coldY;
   function add(kind, w, id, title){
     items.push({kind, x, w, id, title, cx:x+w/2, y:currentAddY});
-    x += w + 48;
+    x += w + 64;
   }
   const coldSuffix = showSecondRow? ' (Cold Deck)' : '';
   if(config.includeOa){
@@ -229,7 +229,7 @@ function buildSchematicCore(){
   if(independent){
     function addHot(kind, w, id, title){
       hotItems.push({kind, x:hx, w, id, title, cx:hx+w/2, y:hotY});
-      hx += w + 48;
+      hx += w + 64;
     }
     if(config.includeOa){
       if(hasReturn){
@@ -246,7 +246,7 @@ function buildSchematicCore(){
     hx = forkX + taperW;
     function addHotBranch(kind, w, id, title){
       hotItems.push({kind, x:hx, w, id, title, cx:hx+w/2, y:hotY});
-      hx += w + 48;
+      hx += w + 64;
     }
     addHotBranch('coil', 90, 'hotdeck', 'Hot Deck Heating Coil');
     addHotBranch('supplydamper', 56, 'hotDamper', 'Hot Deck Damper');
@@ -310,7 +310,7 @@ function buildSchematicCore(){
     coldLaneItems.forEach(it=>{ s += drawStation(it, coldLaneY, ductH, 'up'); });
     // Static pressure sensor on a short stub after the main duct (represents 2/3 down unknown duct length)
     const cStubStart = ductEnd + 12;
-    const cStubW = 40;
+    const cStubW = 120;
     s += horizDuctSVG(cStubStart, coldLaneY-ductH/2, cStubW, ductH, null, null, true, true);
     s += '<line x1="'+(ductEnd+2)+'" y1="'+(coldLaneY-ductH/2+4)+'" x2="'+(ductEnd+8)+'" y2="'+(coldLaneY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(ductEnd+6)+'" y1="'+(coldLaneY-ductH/2+4)+'" x2="'+(ductEnd+12)+'" y2="'+(coldLaneY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
@@ -330,7 +330,7 @@ function buildSchematicCore(){
     if(independent){ s += '<text x="'+ductStart+'" y="'+(coldY-ductH/2-10)+'" font-family="Arial" font-size="10" font-weight="700" fill="'+BAS.textDim+'">COLD DECK AIR PATH</text>'; }
     // Static pressure sensor on a short stub after the main duct
     const stubStart = ductEnd + 12;
-    const stubW = 40;
+    const stubW = 120;
     s += horizDuctSVG(stubStart, coldY-ductH/2, stubW, ductH, null, null, true, true);
     s += '<line x1="'+(ductEnd+2)+'" y1="'+(coldY-ductH/2+4)+'" x2="'+(ductEnd+8)+'" y2="'+(coldY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(ductEnd+6)+'" y1="'+(coldY-ductH/2+4)+'" x2="'+(ductEnd+12)+'" y2="'+(coldY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
@@ -363,7 +363,7 @@ function buildSchematicCore(){
     if(independent){ s += '<text x="'+hDuctStart+'" y="'+(hotY-ductH/2-10)+'" font-family="Arial" font-size="10" font-weight="700" fill="'+BAS.textDim+'">HOT DECK AIR PATH</text>'; }
     // Static pressure sensor on a short stub after the main hot deck duct
     const hStubStart = hDuctEnd + 12;
-    const hStubW = 40;
+    const hStubW = 120;
     s += horizDuctSVG(hStubStart, hotY-ductH/2, hStubW, ductH, null, null, true, true);
     s += '<line x1="'+(hDuctEnd+2)+'" y1="'+(hotY-ductH/2+4)+'" x2="'+(hDuctEnd+8)+'" y2="'+(hotY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(hDuctEnd+6)+'" y1="'+(hotY-ductH/2+4)+'" x2="'+(hDuctEnd+12)+'" y2="'+(hotY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
