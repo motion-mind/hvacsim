@@ -723,7 +723,7 @@ function tick(){
     const returnFanSlew = config.driveType==='vfd' ? 100 / 90 : 20;
     sim.returnFanPct = slew(sim.returnFanPct, targetReturnPct, returnFanSlew);
     sim.returnFans.forEach(f=>{ f.run = rfStartCmd && !f.fail; });
-    sim.returnCfm = rfStartCmd ? (0.35 * designCfm) * (sim.returnFanPct/100) * capFracReturn * (0.97+0.06*Math.random()) * flowDegradation : 0;
+    sim.returnCfm = rfStartCmd ? (0.75 * sp.maxCfmSP) * (sim.returnFanPct/100) * capFracReturn * (0.97+0.06*Math.random()) * flowDegradation : 0;
   } else { sim.returnCfm = NaN; }
 
   // Freezestat recovery: after reset, prevent re-trip until PHC-LAT rises back above

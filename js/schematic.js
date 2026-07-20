@@ -520,8 +520,8 @@ function updateSchematicReadouts(){
       }
       else if(it.id==='filter') lines=['FILTER', activeFaults.dirtyFilter? 'DIRTY':'CLEAN'];
       else if(it.id==='supplyfan') lines=[(config.dualDuctIndependent?'CD FAN ':'SF ')+fmt(sim.supplyFanPct,0)+'%', fmt(sim.supplyCfm,0)+' CFM'];
-      else if(it.id==='humid') lines=['SA-RH '+fmt(sim.saRH*100,0)+'%','VLV '+fmt(sim.humidValve,0)+'%'];
-      else if(it.id==='discharge'){ lines=[(config.ductType==='dual'?'CD-SAT ':'SAT ')+fmt(config.ductType==='dual'?sim.coldDeckTemp:sim.satDisplayTemp,1)+'\u00b0F', 'SA-RH '+fmt(sim.saRH*100,0)+'%', fmt(sim.supplyCfm,0)+' CFM']; accent='#2b6cb0'; }
+      else if(it.id==='humid'){ const effRh = sim.W_supply ? rhFromW(sim.raTemp || 72, sim.W_supply) * 100 : sim.saRH * 100; lines=['SA-RH '+fmt(effRh,0)+'%','VLV '+fmt(sim.humidValve,0)+'%']; }
+      else if(it.id==='discharge'){ const effRh = sim.W_supply ? rhFromW(sim.raTemp || 72, sim.W_supply) * 100 : sim.saRH * 100; lines=[(config.ductType==='dual'?'CD-SAT ':'SAT ')+fmt(config.ductType==='dual'?sim.coldDeckTemp:sim.satDisplayTemp,1)+'\u00b0F', 'SA-RH '+fmt(effRh,0)+'%', fmt(sim.supplyCfm,0)+' CFM']; accent='#2b6cb0'; }
       else if(it.id==='hotOaIntake') lines=['OAT '+fmt(sim.oat,1)+'\u00b0F','OAH '+fmt(sim.oaRH*100,0)+'%','OA '+fmt(sim.hotOaCfm,0)+' CFM'];
       else if(it.id==='hotMixbox') {
         const ry = window._schemReturnY;

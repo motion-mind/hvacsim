@@ -230,7 +230,7 @@ function renderVavBoxGrid(){
     }
     return '<div class="vav-box" id="vavBoxCard'+n+'"><h3>'+box.id+'</h3>'+vavBoxDiagramSvg(box,n,isDual)+rows+'</div>';
   }).join('');
-  el.querySelectorAll('input[data-vavbox]').forEach(inp=>{ inp.addEventListener('change', (e)=>{ const idx = parseInt(e.target.dataset.vavbox)-1; if(sim.vav[idx]) sim.vav[idx].zoneSP = clamp(Math.round(parseFloat(e.target.value) * 10) / 10 || 72, 55, 90); }); });
+  el.querySelectorAll('input[data-vavbox]').forEach(inp=>{ inp.addEventListener('change', (e)=>{ const idx = parseInt(e.target.dataset.vavbox)-1; if(sim.vav[idx]){ sim.vav[idx].zoneSP = clamp(Math.round(parseFloat(e.target.value) * 10) / 10 || 72, 55, 90); e.target.value = sim.vav[idx].zoneSP; } }); });
   el.querySelectorAll('select[data-vavpress]').forEach(sel=>{ sel.addEventListener('change', (e)=>{ const idx = parseInt(e.target.dataset.vavpress)-1; if(sim.vav[idx]) sim.vav[idx].pressurize = e.target.value; }); });
   updateVavBoxGridValues();
 }
