@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AHU-1 // Training Simulator</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="mark">AHU</div>
+    <div>
+      <h1>Air Handling Unit &mdash; Training Simulator</h1>
+      <div class="sub" id="unitSubtitle">UNCONFIGURED &middot; go to Setup</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="setup">Setup</button>
+    <button class="tab-btn" data-tab="ahu">AHU-1</button>
+    <button class="tab-btn" data-tab="panel">Control Panel</button>
+    <button class="tab-btn" data-tab="vav" id="tabBtnVav" style="display:none;">VAV Boxes</button>
+    <button class="tab-btn" data-tab="ef" id="tabBtnEf" style="display:none;">Exhaust Fan</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="speed-group" id="speedGroup">
+      <button data-speed="1" class="sel">1x</button>
+      <button data-speed="2">2x</button>
+      <button data-speed="5">5x</button>
+      <button data-speed="10">10x</button>
+    </div>
+    <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle light / dark mode">&#9788;</button>
+    <div class="status-chip"><span class="dot" id="topEnableDot"></span><span id="topEnableText">DISABLED</span></div>
+  </div>
+</div>
+
+<!-- ================= SETUP TAB ================= -->
+<div class="tabpanel active" id="tab-setup">
+  <div class="panel">
+    <h2>Setup Actions</h2>
+    <div class="btnrow">
+      <button class="btn primary" id="btnApply">Apply Configuration &amp; Go To AHU-1</button>
+      <button class="btn" id="btnRandomizeCfg">Randomize Configuration</button>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Air Handling Unit Configuration</h2>
+    <div class="grid g3" id="setupGrid"></div>
+  </div>
+  <div class="panel">
+    <h2>Saved Setups</h2>
+    <div class="savebar">
+      <input type="text" id="saveName" placeholder="Setup name (e.g. RTU-4 Dual Duct)" style="flex:1;min-width:220px;">
+      <button class="btn" id="btnSaveSetup">Save Current Setup</button>
+      <button class="btn" id="btnRefreshSaved">Refresh List</button>
+    </div>
+    <div class="saved-list" id="savedList"></div>
+    <small class="hint">Saved setups are stored locally to this simulator session (browser storage), not shared with anyone else.</small>
+  </div>
+</div>
+
+<!-- ================= AHU TAB ================= -->
+<div class="tabpanel" id="tab-ahu">
+  <div class="panel">
+    <div class="slider-block">
+      <div class="slider-group">
+        <h2 style="margin-bottom:6px;">Outdoor Air Temperature (OAT)</h2>
+        <div class="oat-readout" id="oatReadout">55.0 &deg;F</div>
+        <input type="range" id="oatSlider" min="0" max="110" step="0.5" value="55">
+        <div class="slider-labels"><span id="oatMinLbl">0&deg;F</span><span id="oatMaxLbl">110&deg;F</span></div>
+      </div>
+      <div class="slider-group">
+        <h2 style="margin-bottom:6px;">Outdoor Air Humidity (OA RH)</h2>
+        <div class="oat-readout" id="oaRhReadout" style="color:var(--blue-cold);">50 %RH</div>
+        <input type="range" id="oaRhSlider" min="0" max="100" step="1" value="50">
+        <div class="slider-labels"><span>0% (Bone Dry)</span><span>100% (Saturated)</span></div>
+      </div>
+      <div class="slider-group">
+        <h2 style="margin-bottom:6px;">AHU Casing &amp; Component Age</h2>
+        <div class="oat-readout" id="ageReadout" style="color:var(--green);">0 Years (New)</div>
+        <input type="range" id="ageSlider" min="0" max="50" step="1" value="0">
+        <div class="slider-labels"><span>0 Years (Brand New)</span><span>50 Years (Aged)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;" id="sooHeader">
+      <h2 style="margin:0;display:flex;align-items:center;gap:8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue-cold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        Sequence of Operations (SOO)
+      </h2>
+      <span id="sooToggleArrow" style="font-size:16px;color:var(--text-faint);transition:transform 0.2s;">&#9662;</span>
+    </div>
+    <div id="sooContent" style="display:none;margin-top:16px;font-size:13px;line-height:1.6;color:var(--text-dim);border-top:1px solid var(--line-soft);padding-top:16px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;">
+        <div>
+          <h3 style="color:var(--text);margin-top:0;margin-bottom:8px;font-size:14px;border-left:3px solid var(--blue);padding-left:8px;">1. Fan &amp; Ventilation Control</h3>
+          <ul style="margin:0;padding-left:16px;">
+            <li><strong>Unit Enable:</strong> Supply fan starts when toggled. Return fan is sized at 35% of supply fan bank capacity and starts if configured.</li>
+            <li><strong>VFD Control:</strong> Speed modulates to maintain setpoint. Supply fan VFD has a 120-second ramp speed; return fan VFD has a 90-second ramp speed.</li>
+            <li><strong>Starter Control:</strong> Fan runs at 100% capacity; dampers modulate air flow.</li>
+            <li><strong>Ventilation / Economizer:</strong> Dampers modulate to maintain mixed-air temp setpoint (economizer active when OAT is favorable).</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color:var(--text);margin-top:0;margin-bottom:8px;font-size:14px;border-left:3px solid var(--green);padding-left:8px;">2. Temperature Control</h3>
+          <ul style="margin:0;padding-left:16px;">
+            <li><strong>Preheat Coil:</strong> Modulates to keep coil leaving air temp above 38&deg;F.</li>
+            <li><strong>Cooling Coil:</strong> Modulates to maintain supply/cold-deck SAT at setpoint (typically 55&deg;F).</li>
+            <li><strong>Reheat Coil (Single-Duct):</strong> Modulates to maintain supply air temperature setpoint.</li>
+            <li><strong>Hot Deck Coil (Dual-Duct):</strong> Modulates to maintain hot-deck temperature setpoint.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color:var(--text);margin-top:0;margin-bottom:8px;font-size:14px;border-left:3px solid var(--yellow);padding-left:8px;">3. Humidity &amp; Room Reset</h3>
+          <ul style="margin:0;padding-left:16px;">
+            <li><strong>Humidification:</strong> Modulates steam valve to track Return RH against low limit setpoint. Clamps single-duct supply RH to &le;85%.</li>
+            <li><strong>Dehumidification:</strong> Triggers if Return RH exceeds high limit, or if OR/PR space RH exceeds 50%. Limits SAT/Cold Deck to &le;60&deg;F, clamps box reheats to &le;Zone SP + 5&deg;F, and locks hot deck OA.</li>
+            <li><strong>OR/PR Reset:</strong> Space RH &gt;50% resets zone temp SP up by up to 3&deg;F to drop local relative humidity.</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color:var(--text);margin-top:0;margin-bottom:8px;font-size:14px;border-left:3px solid var(--red);padding-left:8px;">4. Safety &amp; Lockout Sequences</h3>
+          <ul style="margin:0;padding-left:16px;">
+            <li><strong>Freezestat:</strong> Shuts down fans, forces heating valves 100% open, and latches if coil temp falls below 38&deg;F.</li>
+            <li><strong>High Static:</strong> Trips and latches if duct pressure exceeds 2.5" w.g., shutting down VFDs.</li>
+            <li><strong>Aquastat:</strong> Trips preheat booster pumps on water flow failure to prevent freeze-ups.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>System Schematic <span id="schemLegend" style="text-transform:none;font-weight:400;color:var(--text-faint);">live airflow &amp; temperatures</span></h2>
+    <div class="ahu-header-row">
+      <div class="ahu-id-box">
+        <div class="ahu-id-title">AHU-1</div>
+        <div class="ahu-id-sub" id="ahuIdSub">RETURN AIR SYSTEM</div>
+      </div>
+      <div class="enable-card" id="enableCard">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);font-family:var(--mono);">Unit Enable</div>
+        <div class="toggle-wrap">
+          <div class="toggle" id="enableToggle"><div class="knob"></div></div>
+          <span id="enableLabel" class="enable-status">DISABLED</span>
+        </div>
+      </div>
+      <div class="enable-card" id="econCard">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);font-family:var(--mono);">Economizer</div>
+        <div class="toggle-wrap">
+          <span class="dot" id="econActiveDot" style="width:9px;height:9px;"></span>
+          <div class="toggle" id="econToggle"><div class="knob"></div></div>
+          <span id="econLabel" class="enable-status">ENABLED</span>
+        </div>
+      </div>
+      <div class="enable-card" id="dehumidCard">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);font-family:var(--mono);">Dehumidification</div>
+        <div class="toggle-wrap">
+          <span class="dot" id="dehumidActiveDot" style="width:9px;height:9px;"></span>
+          <div class="toggle" id="dehumidToggle"><div class="knob"></div></div>
+          <span id="dehumidLabel" class="enable-status">ENABLED</span>
+        </div>
+      </div>
+      <div class="enable-card" id="humidCard" style="display:none;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);font-family:var(--mono);">Humidification</div>
+        <div class="toggle-wrap">
+          <span class="dot" id="humidActiveDot" style="width:9px;height:9px;"></span>
+          <div class="toggle" id="humidToggle"><div class="knob"></div></div>
+          <span id="humidLabel" class="enable-status">ENABLED</span>
+        </div>
+      </div>
+      <div>
+        <button class="btn danger" id="btnResetSafeties" style="height:48px;padding:0 16px;display:inline-flex;align-items:center;justify-content:center;margin:0;">Reset Latched Safeties</button>
+        <div style="margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--text-dim);max-width:260px;" id="lockoutMsg"></div>
+      </div>
+    </div>
+    <div class="schematic-wrap"><svg id="schematicSvg" viewBox="0 0 1400 380"></svg></div>
+    <div class="btnrow" style="margin-top:14px;margin-bottom:10px;align-items:center;gap:16px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label style="font-family:var(--mono);font-size:12px;color:var(--text-faint);margin:0;">Layout Template:</label>
+        <select id="layoutTemplateSelect" style="min-width:180px;"><option value="">— Default Layout —</option></select>
+        <button class="btn" id="btnRefreshLayoutTemplates" title="Refresh list">&#8635;</button>
+      </div>
+      <div style="width:1px;height:18px;background:var(--line);align-self:center;"></div>
+      <div class="toggle-wrap">
+        <div class="toggle" id="editLayoutToggle"><div class="knob"></div></div>
+        <span style="font-family:var(--mono);font-size:12px;">Edit Layout</span>
+      </div>
+      <span id="layoutEditControls" style="display:none;gap:8px;flex-wrap:wrap;align-items:center;" class="btnrow">
+        <input type="text" id="layoutTemplateName" placeholder="Template name" style="width:150px;">
+        <button class="btn" id="btnSaveLayoutTemplate">Save As Template</button>
+        <button class="btn" id="btnDeleteLayoutTemplate">Delete Selected</button>
+        <button class="btn danger" id="btnResetLayout">Reset Positions</button>
+        <button class="btn" id="btnExportLayout">Export Layout</button>
+        <button class="btn" id="btnImportLayout">Import Layout</button>
+        <input type="file" id="importLayoutFile" accept="application/json" style="display:none;">
+      </span>
+    </div>
+    <div id="addElementRow" style="display:none;margin-bottom:10px;" class="btnrow">
+      <select id="addElementType" style="min-width:190px;">
+        <optgroup label="Sensors">
+          <option value="sensorTemp">Temperature Sensor</option>
+          <option value="sensorHumidity">Humidity Sensor</option>
+          <option value="sensorPressure">Pressure Sensor</option>
+          <option value="sensorStaticPressure">Static Pressure Sensor</option>
+          <option value="sensorFlow">Flow Sensor</option>
+        </optgroup>
+        <optgroup label="Valves">
+          <option value="gateValve">Gate Valve</option>
+          <option value="ballValve">Ball Valve</option>
+          <option value="butterflyValve">Butterfly Valve</option>
+        </optgroup>
+        <optgroup label="Status">
+          <option value="alarmStatus">Alarm</option>
+          <option value="faultStatus">Fault</option>
+          <option value="manualOverride">Manual Override</option>
+          <option value="outOfService">Out of Service</option>
+        </optgroup>
+        <optgroup label="Other">
+          <option value="thermalWheel">Energy Recovery Wheel</option>
+          <option value="ductSection">Ductwork Section</option>
+        </optgroup>
+      </select>
+      <button class="btn" id="btnAddElement">+ Add to Diagram</button>
+      <small class="hint">Double-click an added element to remove it.</small>
+    </div>
+    <div id="exportLayoutBox" style="display:none;margin-bottom:10px;">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-bottom:4px;">Copy this and paste it in chat (or download it and attach the file) to show exactly where you want things — includes every dragged element's id and pixel offset from its default position.</div>
+      <textarea id="exportLayoutText" readonly style="width:100%;height:130px;font-family:var(--mono);font-size:11px;box-sizing:border-box;"></textarea>
+      <div class="btnrow" style="margin-top:6px;">
+        <button class="btn" id="btnCopyExportLayout">Copy to Clipboard</button>
+        <button class="btn" id="btnDownloadExportLayout">Download as File</button>
+      </div>
+    </div>
+    <small class="hint" id="layoutEditHint" style="display:none;margin-bottom:8px;">Drag any icon or info box to reposition it, or add new elements from the library below. Nothing is saved until you click "Save As Template" — reloading or reconfiguring without saving discards the changes.</small>
+  </div>
+
+  <div class="panel">
+    <h2>System Readings</h2>
+    <div class="subhead">Airflow</div>
+    <div class="grid g6" id="flowReadings"></div>
+    <div class="subhead">Temperature &amp; Humidity</div>
+    <div class="grid g6" id="tempReadings"></div>
+    <div class="subhead">AHU Performance &amp; Efficiency</div>
+    <div class="grid g6" id="efficiencyReadings"></div>
+    <div class="subhead">Fan Status</div>
+    <div class="grid g4" id="fanStatusArea"></div>
+  </div>
+
+  <div class="grid-2col">
+    <div class="panel">
+      <h2>Setpoints <span style="text-transform:none;font-weight:400;color:var(--text-faint);">all setpoints in one place</span></h2>
+      <div style="overflow-x:auto;"><table class="sp" id="setpointTable"><thead><tr><th>Point</th><th>Setpoint</th><th>Units</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="panel">
+      <h2>Safeties</h2>
+      <div class="safety-row" id="safetyArea"></div>
+    </div>
+  </div>
+
+  <details class="panel-collapsible" id="faultsScenariosDetails">
+    <summary>Faults &amp; Training Scenarios</summary>
+    <div class="subhead">Troubleshooting Scenarios</div>
+    <div class="btnrow" style="margin-bottom:10px;align-items:center;">
+      <select id="scenarioSelect" style="min-width:260px;"><option value="">— Choose a Scenario —</option></select>
+      <button class="btn" id="btnStartScenario">Start Scenario</button>
+      <button class="btn danger" id="btnEndScenario" style="display:none;">End Scenario</button>
+    </div>
+    <div id="scenarioBriefing" style="display:none;">
+      <div id="scenarioBriefingTitle" style="font-weight:700;margin-bottom:6px;"></div>
+      <div id="scenarioBriefingText" style="background:var(--panel-inset);border:1px solid var(--line-soft);border-left:3px solid var(--amber);border-radius:4px;padding:11px 13px;font-size:13px;line-height:1.55;"></div>
+      <div class="btnrow" style="margin-top:8px;">
+        <button class="btn" id="btnRevealSolution">Reveal Solution</button>
+      </div>
+      <div id="scenarioSolutionText" style="display:none;margin-top:8px;background:var(--panel-inset);border:1px solid var(--line-soft);border-radius:4px;padding:10px 13px;font-size:12.5px;color:var(--text-faint);line-height:1.5;"></div>
+    </div>
+    <div class="subhead">Manual Fault Injection</div>
+    <div class="grid g2">
+      <div>
+        <label class="field">Pick a Specific Situation
+          <select id="faultPicker"></select>
+        </label>
+        <div class="btnrow" style="margin-top:10px;">
+          <button class="btn warn" id="btnApplyFault">Apply Selected</button>
+          <button class="btn danger" id="btnRandomFault">Randomize Fault / Emergency</button>
+          <button class="btn warn" id="btnClearManualFaultsOnly">Clear Manual Faults Only</button>
+          <button class="btn" id="btnClearFaults">Clear All Faults</button>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:11px;color:var(--text-dim);font-family:var(--mono);text-transform:uppercase;margin:0 0 8px;">Active</h3>
+        <div class="fault-active-list" id="activeFaultList"><span style="color:var(--text-faint);font-size:12px;">No active faults &mdash; system nominal.</span></div>
+        <details class="reveal" id="revealBox" style="display:none;">
+          <summary>Reveal diagnosis (instructor / answer key)</summary>
+          <div class="reveal-body" id="revealBody"></div>
+        </details>
+      </div>
+    </div>
+  </details>
+</div>
+
+<!-- ================= CONTROL PANEL TAB ================= -->
+<div class="tabpanel" id="tab-panel">
+  <div class="panel">
+    <h2>Field Control Panel &mdash; Terminal Strips</h2>
+    <div class="helpbox">
+      Click a terminal to attach the <b style="color:var(--red);">red</b> probe, click another to attach the <b>black</b> probe. Select a meter function on the left, then read the display. Testing the wrong function against a live circuit can damage the meter &mdash; just like in the field.
+    </div>
+  </div>
+  <div class="meter-wrap">
+    <div class="meter-body">
+      <div class="meter-screen" id="meterScreen">
+        <div class="mreading" id="meterReading">- - -</div>
+        <div class="munit" id="meterUnit">&nbsp;</div>
+        <div class="mmsg" id="meterMsg">Select a function and connect probes.</div>
+      </div>
+      <div class="mode-grid" id="meterModes"></div>
+      <div class="probe-info">
+        <div><span class="probe-tag red">RED</span><span id="probeRedName">not connected</span></div>
+        <div style="margin-top:6px;"><span class="probe-tag black">BLACK</span><span id="probeBlackName">not connected</span></div>
+      </div>
+      <div class="btnrow" style="margin-top:12px;">
+        <button class="btn" id="btnClearProbes">Clear Probes</button>
+        <button class="btn danger" id="btnReplaceMeter" style="display:none;">Replace Damaged Meter</button>
+      </div>
+    </div>
+    <div class="terminal-board" id="terminalBoard"></div>
+  </div>
+</div>
+
+<div class="tabpanel" id="tab-vav">
+  <div class="panel" id="vavDisabledNote" style="display:none;">
+    <h2>VAV Terminal Boxes</h2>
+    <div class="hint">VAV boxes aren't enabled for this unit. Go to the Setup tab, turn on "VAV Terminal Boxes," choose how many (1&ndash;10), and click Apply Configuration.</div>
+  </div>
+  <div id="vavContent" style="display:none;">
+    <div class="panel">
+      <h2>Zones</h2>
+      <div id="vavBoxGrid" class="vav-grid"></div>
+    </div>
+    <div class="panel">
+      <h2>Field Control Panel &mdash; VAV Terminal Strips</h2>
+      <div class="helpbox">
+        Click a terminal to attach the <b style="color:var(--red);">red</b> probe, click another to attach the <b>black</b> probe. Right-click a terminal to disconnect or reconnect its wire — useful for safely bridging a current loop in series. Select a meter function on the left, then read the display.
+      </div>
+      <div class="btnrow" style="margin-top:10px;">
+        <label class="field" style="margin:0;">Box<select id="vavTermBoxSelect" style="min-width:80px;"></select></label>
+      </div>
+    </div>
+    <div class="meter-wrap">
+      <div class="meter-body">
+        <div class="meter-screen" id="vavMeterScreen">
+          <div class="mreading" id="vavMeterReading">- - -</div>
+          <div class="munit" id="vavMeterUnit">&nbsp;</div>
+          <div class="mmsg" id="vavMeterMsg">Select a function and connect probes.</div>
+        </div>
+        <div class="mode-grid" id="vavMeterModes"></div>
+        <div class="probe-info">
+          <div><span class="probe-tag red">RED</span><span id="vavProbeRedName">not connected</span></div>
+          <div style="margin-top:6px;"><span class="probe-tag black">BLACK</span><span id="vavProbeBlackName">not connected</span></div>
+        </div>
+        <div class="btnrow" style="margin-top:12px;">
+          <button class="btn" id="btnClearVavProbes">Clear Probes</button>
+          <button class="btn danger" id="btnReplaceVavMeter" style="display:none;">Replace Damaged Meter</button>
+        </div>
+      </div>
+      <div class="terminal-board" id="vavTerminalBoard"></div>
+    </div>
+    <details class="panel-collapsible" id="vavFaultsScenariosDetails" style="margin-top: 15px;">
+      <summary>Faults &amp; Training Scenarios</summary>
+      <div class="subhead">Troubleshooting Scenarios</div>
+      <div class="btnrow" style="margin-bottom:10px;align-items:center;">
+        <select id="vavScenarioSelect" style="min-width:260px;"><option value="">— Choose a Scenario —</option></select>
+        <button class="btn" id="btnStartVavScenario">Start Scenario</button>
+        <button class="btn danger" id="btnEndVavScenario" style="display:none;">End Scenario</button>
+      </div>
+      <div id="vavScenarioBriefing" style="display:none;margin-bottom:15px;">
+        <div id="vavScenarioBriefingTitle" style="font-weight:700;margin-bottom:6px;"></div>
+        <div id="vavScenarioBriefingText" style="background:var(--panel-inset);border:1px solid var(--line-soft);border-left:3px solid var(--amber);border-radius:4px;padding:11px 13px;font-size:13px;line-height:1.55;"></div>
+        <div class="btnrow" style="margin-top:8px;">
+          <button class="btn" id="btnRevealVavSolution">Reveal Solution</button>
+        </div>
+        <div id="vavScenarioSolutionText" style="display:none;margin-top:8px;background:var(--panel-inset);border:1px solid var(--line-soft);border-radius:4px;padding:10px 13px;font-size:12.5px;color:var(--text-faint);line-height:1.5;"></div>
+      </div>
+      <div class="subhead">Manual Fault Injection</div>
+      <div class="btnrow" style="align-items:flex-end;margin-bottom:10px;">
+        <label class="field" style="margin:0;">Box<select id="vavFaultBox" style="min-width:80px;"></select></label>
+        <label class="field" style="margin:0;">Fault<select id="vavFaultPicker" style="min-width:260px;"></select></label>
+        <button class="btn" id="btnApplyVavFault">Apply Fault</button>
+        <button class="btn danger" id="btnResetVavFaults">Reset All VAV Faults</button>
+      </div>
+      <div id="vavActiveFaultList" style="margin-top:10px;font-size:12.5px;color:var(--text-faint);"></div>
+    </details>
+  </div>
+</div>
+
+<div class="tabpanel" id="tab-ef">
+  <div class="grid g2" style="grid-template-columns: 3fr 2fr; gap: 20px;">
+    <div class="panel" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+      <h2>Exhaust Fan System EF-1</h2>
+      <div id="efGraphicContainer" style="width:100%; max-width:600px; background:var(--panel-inset); border:1px solid var(--line-soft); border-radius:6px; padding:15px; box-sizing:border-box;">
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <div class="panel">
+        <h2>System Status</h2>
+        <div class="vrow"><span>Active Lead Fan</span><span class="vval">
+          <select id="efLeadSelect">
+            <option value="A">Fan A</option>
+            <option value="B">Fan B</option>
+          </select>
+        </span></div>
+        <div class="vrow"><span>System Exhaust Flow</span><span class="vval" id="efTotalCfm" style="font-weight:bold; color:var(--cyan);">0 CFM</span></div>
+        <div class="vrow"><span>Status</span><span class="vval" id="efSystemStatus" style="font-weight:bold;">OFF</span></div>
+      </div>
+      <div class="panel">
+        <h2>Fan Status</h2>
+        <div style="overflow-x:auto;">
+          <table class="sp" style="width:100%; border-collapse:collapse; font-size:12.5px;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--line-soft);">
+                <th style="text-align:left; padding:6px;">Point</th>
+                <th style="text-align:center; padding:6px;">Fan A</th>
+                <th style="text-align:center; padding:6px;">Fan B</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--line-soft);">
+                <td style="padding:6px;">Damper Position</td>
+                <td style="text-align:center; padding:6px;" id="efDprA">0%</td>
+                <td style="text-align:center; padding:6px;" id="efDprB">0%</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--line-soft);">
+                <td style="padding:6px;">End Switch Made</td>
+                <td style="text-align:center; padding:6px;" id="efSwA">NO</td>
+                <td style="text-align:center; padding:6px;" id="efSwB">NO</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--line-soft);">
+                <td style="padding:6px;">Motor Run Signal</td>
+                <td style="text-align:center; padding:6px;" id="efRunA">OFF</td>
+                <td style="text-align:center; padding:6px;" id="efRunB">OFF</td>
+              </tr>
+              <tr>
+                <td style="padding:6px;">Fault State</td>
+                <td style="text-align:center; padding:6px;" id="efFltA">OK</td>
+                <td style="text-align:center; padding:6px;" id="efFltB">OK</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <details class="panel-collapsible" id="efFaultsDetails">
+        <summary>EF-1 Manual Fault Injection</summary>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+          <div class="vrow" style="align-items:center;">
+            <span>Motor Faults</span>
+            <span class="btnrow" style="gap:5px;">
+              <button class="btn warn btn-xs" id="btnToggleFltMotorA">Trip Fan A</button>
+              <button class="btn warn btn-xs" id="btnToggleFltMotorB">Trip Fan B</button>
+            </span>
+          </div>
+          <div class="vrow" style="align-items:center;">
+            <span>Damper Faults</span>
+            <span class="btnrow" style="gap:5px;">
+              <button class="btn warn btn-xs" id="btnToggleFltDprA">Stuck Damper A</button>
+              <button class="btn warn btn-xs" id="btnToggleFltDprB">Stuck Damper B</button>
+            </span>
+          </div>
+          <div class="btnrow" style="margin-top:5px;">
+            <button class="btn danger" id="btnResetEfFaults" style="width:100%;">Reset EF-1 Faults</button>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<div class="footer-note">Simplified training model &mdash; all setpoints, PID control loops, and psychrometrics run locally in your browser. Not a substitute for manufacturer sequences of operation.</div>
+
+<script src="js/core.js"></script>
+<script src="js/setup.js"></script>
+<script src="js/simulation.js"></script>
+<script src="js/faults.js"></script>
+<script src="js/components.js"></script>
+<script src="js/schematic.js"></script>
+<script src="js/layout-editor.js"></script>
+<script src="js/ahu.js"></script>
+<script src="js/vav.js"></script>
+<script src="js/control-panel.js"></script>
+<script src="js/ef.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
