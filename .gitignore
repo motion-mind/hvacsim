@@ -7,3 +7,6 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Excel data files
+*.xlsx
