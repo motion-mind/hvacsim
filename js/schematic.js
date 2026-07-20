@@ -308,22 +308,32 @@ function buildSchematicCore(){
     s += '<text x="'+ductStart+'" y="'+(coldY-ductH/2-10)+'" font-family="Arial" font-size="10" font-weight="700" fill="'+BAS.textDim+'">SUPPLY SPLITS TO COLD / HOT DECK</text>';
     preforkItems.forEach(it=>{ s += drawStation(it, coldY, ductH); });
     coldLaneItems.forEach(it=>{ s += drawStation(it, coldLaneY, ductH, 'up'); });
-    cspX = splitX + (ductEnd - splitX) * 2/3;
-    s += '<line x1="'+cspX+'" y1="'+(coldLaneY-ductH/2)+'" x2="'+cspX+'" y2="'+(coldLaneY-ductH/2-20)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
-    s += '<line x1="'+(cspX-3)+'" y1="'+(coldLaneY-ductH/2-2)+'" x2="'+(cspX+3)+'" y2="'+(coldLaneY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
-    s += '<line x1="'+(cspX-3)+'" y1="'+(coldLaneY-ductH/2-4)+'" x2="'+(cspX+3)+'" y2="'+(coldLaneY-ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
-    s += '<g transform="translate('+(cspX-9)+','+(coldLaneY-ductH/2-52)+')">'+gfxWrap('sensorStaticPressure', '', 0.55)+'</g>';
+    // Static pressure sensor on a short stub after the main duct (represents 2/3 down unknown duct length)
+    const cStubStart = ductEnd + 12;
+    const cStubW = 40;
+    s += horizDuctSVG(cStubStart, coldLaneY-ductH/2, cStubW, ductH, null, null, false, true);
+    s += '<line x1="'+(ductEnd+4)+'" y1="'+(coldLaneY-ductH/2+4)+'" x2="'+(ductEnd+4)+'" y2="'+(coldLaneY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.5"/>';
+    const cStubCx = cStubStart + cStubW/2;
+    s += '<line x1="'+cStubCx+'" y1="'+(coldLaneY-ductH/2)+'" x2="'+cStubCx+'" y2="'+(coldLaneY-ductH/2-20)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
+    s += '<line x1="'+(cStubCx-3)+'" y1="'+(coldLaneY-ductH/2-2)+'" x2="'+(cStubCx+3)+'" y2="'+(coldLaneY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
+    s += '<line x1="'+(cStubCx-3)+'" y1="'+(coldLaneY-ductH/2-4)+'" x2="'+(cStubCx+3)+'" y2="'+(coldLaneY-ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
+    s += '<g transform="translate('+(cStubCx-9)+','+(coldLaneY-ductH/2-52)+')">'+gfxWrap('sensorStaticPressure', '', 0.55)+'</g>';
   } else {
     // For non-sharedDual: if there's a return riser, leave a gap in the supply duct bottom.
     const supBotHoles = (hasReturn && _riserX !== null) ? [{from: _riserX-riserW/2, to: _riserX+riserW/2}] : null;
     s += horizDuctSVG(ductStart, coldY-ductH/2, ductEnd-ductStart, ductH, supBotHoles, null);
     s += arrowFlowLine(ductStart, coldY, ductEnd, coldY, 'fwd', 'flow_coldSupply', 'flow-fwd');
     if(independent){ s += '<text x="'+ductStart+'" y="'+(coldY-ductH/2-10)+'" font-family="Arial" font-size="10" font-weight="700" fill="'+BAS.textDim+'">COLD DECK AIR PATH</text>'; }
-    const spX = ductStart + (ductEnd - ductStart) * 2/3;
-    s += '<line x1="'+spX+'" y1="'+(coldY-ductH/2)+'" x2="'+spX+'" y2="'+(coldY-ductH/2-20)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
-    s += '<line x1="'+(spX-3)+'" y1="'+(coldY-ductH/2-2)+'" x2="'+(spX+3)+'" y2="'+(coldY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
-    s += '<line x1="'+(spX-3)+'" y1="'+(coldY-ductH/2-4)+'" x2="'+(spX+3)+'" y2="'+(coldY-ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
-    s += '<g transform="translate('+(spX-9)+','+(coldY-ductH/2-52)+')">'+gfxWrap('sensorStaticPressure', '', 0.55)+'</g>';
+    // Static pressure sensor on a short stub after the main duct
+    const stubStart = ductEnd + 12;
+    const stubW = 40;
+    s += horizDuctSVG(stubStart, coldY-ductH/2, stubW, ductH, null, null, false, true);
+    s += '<line x1="'+(ductEnd+4)+'" y1="'+(coldY-ductH/2+4)+'" x2="'+(ductEnd+4)+'" y2="'+(coldY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.5"/>';
+    const stubCx = stubStart + stubW/2;
+    s += '<line x1="'+stubCx+'" y1="'+(coldY-ductH/2)+'" x2="'+stubCx+'" y2="'+(coldY-ductH/2-20)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
+    s += '<line x1="'+(stubCx-3)+'" y1="'+(coldY-ductH/2-2)+'" x2="'+(stubCx+3)+'" y2="'+(coldY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
+    s += '<line x1="'+(stubCx-3)+'" y1="'+(coldY-ductH/2-4)+'" x2="'+(stubCx+3)+'" y2="'+(coldY-ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
+    s += '<g transform="translate('+(stubCx-9)+','+(coldY-ductH/2-52)+')">'+gfxWrap('sensorStaticPressure', '', 0.55)+'</g>';
     items.forEach(it=>{ s += drawStation(it, coldY, ductH); });
   }
 
@@ -343,11 +353,16 @@ function buildSchematicCore(){
     }
     s += arrowFlowLine(hDuctStart, hotY, hDuctEnd, hotY, 'fwd', 'flow_hotSupply', 'flow-fwd');
     if(independent){ s += '<text x="'+hDuctStart+'" y="'+(hotY-ductH/2-10)+'" font-family="Arial" font-size="10" font-weight="700" fill="'+BAS.textDim+'">HOT DECK AIR PATH</text>'; }
-    const hspX = hDuctStart + (hDuctEnd - hDuctStart) * 2/3;
-    s += '<line x1="'+hspX+'" y1="'+(hotY-ductH/2)+'" x2="'+hspX+'" y2="'+(hotY-ductH/2-20)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
-    s += '<line x1="'+(hspX-3)+'" y1="'+(hotY-ductH/2-2)+'" x2="'+(hspX+3)+'" y2="'+(hotY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
-    s += '<line x1="'+(hspX-3)+'" y1="'+(hotY-ductH/2-4)+'" x2="'+(hspX+3)+'" y2="'+(hotY-ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
-    s += '<g transform="translate('+(hspX-9)+','+(hotY-ductH/2-52)+')">'+gfxWrap('sensorStaticPressure', '', 0.55)+'</g>';
+    // Static pressure sensor on a short stub after the main hot deck duct
+    const hStubStart = hDuctEnd + 12;
+    const hStubW = 40;
+    s += horizDuctSVG(hStubStart, hotY-ductH/2, hStubW, ductH, null, null, false, true);
+    s += '<line x1="'+(hDuctEnd+4)+'" y1="'+(hotY-ductH/2+4)+'" x2="'+(hDuctEnd+4)+'" y2="'+(hotY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.5"/>';
+    const hStubCx = hStubStart + hStubW/2;
+    s += '<line x1="'+hStubCx+'" y1="'+(hotY-ductH/2)+'" x2="'+hStubCx+'" y2="'+(hotY-ductH/2-20)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
+    s += '<line x1="'+(hStubCx-3)+'" y1="'+(hotY-ductH/2-2)+'" x2="'+(hStubCx+3)+'" y2="'+(hotY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
+    s += '<line x1="'+(hStubCx-3)+'" y1="'+(hotY-ductH/2-4)+'" x2="'+(hStubCx+3)+'" y2="'+(hotY-ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
+    s += '<g transform="translate('+(hStubCx-9)+','+(hotY-ductH/2-52)+')">'+gfxWrap('sensorStaticPressure', '', 0.55)+'</g>';
     hotItems.forEach(it=>{ s += drawStation(it, hotY, ductH, sharedDual?'down':undefined); });
   }
   window._schemHotFlip = showSecondRow;
