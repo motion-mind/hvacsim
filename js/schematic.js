@@ -291,7 +291,7 @@ function buildSchematicCore(){
     const splitX = forkX + taperW;
     // Main prefork duct — gap in bottom at riser; right edge open (fork polygon continues there)
     const supBotHoles = (hasReturn && _riserX !== null) ? [{from: _riserX-riserW/2, to: _riserX+riserW/2}] : null;
-    s += horizDuctSVG(ductStart, coldY-ductH/2, forkX-ductStart, ductH, supBotHoles, null, false, true);
+    s += horizDuctSVG(ductStart, coldY-ductH/2, forkX-ductStart, ductH, supBotHoles, null, true, true);
     // Replace right side line with none (fork polygon continues)
     // Fork fill polys (no stroke) + custom slant-only outline paths
     s += `<polygon points="${forkX},${coldY-ductH/2} ${forkX},${coldY} ${splitX},${coldLaneY+ductH/2} ${splitX},${coldLaneY-ductH/2}" fill="${BAS.duct}" stroke="none"/>`;
@@ -325,7 +325,7 @@ function buildSchematicCore(){
   } else {
     // For non-sharedDual: if there's a return riser, leave a gap in the supply duct bottom.
     const supBotHoles = (hasReturn && _riserX !== null) ? [{from: _riserX-riserW/2, to: _riserX+riserW/2}] : null;
-    s += horizDuctSVG(ductStart, coldY-ductH/2, ductEnd-ductStart, ductH, supBotHoles, null, false, true);
+    s += horizDuctSVG(ductStart, coldY-ductH/2, ductEnd-ductStart, ductH, supBotHoles, null, true, true);
     s += arrowFlowLine(ductStart, coldY, ductEnd, coldY, 'fwd', 'flow_coldSupply', 'flow-fwd');
     if(independent){ s += '<text x="'+ductStart+'" y="'+(coldY-ductH/2-10)+'" font-family="Arial" font-size="10" font-weight="700" fill="'+BAS.textDim+'">COLD DECK AIR PATH</text>'; }
     // Static pressure sensor on a short stub after the main duct
@@ -404,7 +404,7 @@ function buildSchematicCore(){
       // Return main: gaps in top (cold riser) and bottom (hot riser)
       const retTopHoles  = [{from: riserX-riserW/2,  to: riserX+riserW/2}];
       const retBotHoles  = [{from: hRiserX-riserW/2, to: hRiserX+riserW/2}];
-      s += horizDuctSVG(rx0, ry-22, rx1-rx0, 44, retBotHoles, retTopHoles);
+      s += horizDuctSVG(rx0, ry-22, rx1-rx0, 44, retBotHoles, retTopHoles, true, true);
       // Return main arrows: split at the riser junction.
       // Left of junction = exhaust section (only flows when EA damper open).
       // Right of junction = main return (flows whenever return fan runs).
@@ -440,7 +440,7 @@ function buildSchematicCore(){
       const rx1 = raSensorX + 55;
       // Return main: gap in top where cold riser connects
       const retTopHoles = [{from: riserX-riserW/2, to: riserX+riserW/2}];
-      s += horizDuctSVG(rx0, ry-22, rx1-rx0, 44, null, retTopHoles);
+      s += horizDuctSVG(rx0, ry-22, rx1-rx0, 44, null, retTopHoles, true, true);
       // Return main arrows: split at the riser junction.
       // Left section (toward exhaust) only flows when EA damper is open.
       const retJctL = riserX;                          // centre of riser — exhaust arrows reach into the middle of the junction
