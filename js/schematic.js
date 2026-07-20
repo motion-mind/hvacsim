@@ -319,6 +319,9 @@ function buildSchematicCore(){
     s += '<line x1="'+(cStubCx-3)+'" y1="'+(coldLaneY-ductH/2-2)+'" x2="'+(cStubCx+3)+'" y2="'+(coldLaneY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(cStubCx-3)+'" y1="'+(coldLaneY-ductH/2-4)+'" x2="'+(cStubCx+3)+'" y2="'+(coldLaneY-ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<g transform="translate('+(cStubCx-9)+','+(coldLaneY-ductH/2-52)+')">'+gfxWrap('sensorStaticPressure', '', 0.55)+'</g>';
+    s += '<g id="readout_spStubCold"></g>';
+    window._schemSpStubColdCx = cStubCx;
+    window._schemSpStubColdY = coldLaneY;
   } else {
     // For non-sharedDual: if there's a return riser, leave a gap in the supply duct bottom.
     const supBotHoles = (hasReturn && _riserX !== null) ? [{from: _riserX-riserW/2, to: _riserX+riserW/2}] : null;
@@ -336,6 +339,9 @@ function buildSchematicCore(){
     s += '<line x1="'+(stubCx-3)+'" y1="'+(coldY-ductH/2-2)+'" x2="'+(stubCx+3)+'" y2="'+(coldY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(stubCx-3)+'" y1="'+(coldY-ductH/2-4)+'" x2="'+(stubCx+3)+'" y2="'+(coldY-ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<g transform="translate('+(stubCx-9)+','+(coldY-ductH/2-52)+')">'+gfxWrap('sensorStaticPressure', '', 0.55)+'</g>';
+    s += '<g id="readout_spStubMain"></g>';
+    window._schemSpStubMainCx = stubCx;
+    window._schemSpStubMainY = coldY;
     items.forEach(it=>{ s += drawStation(it, coldY, ductH); });
   }
 
@@ -366,6 +372,9 @@ function buildSchematicCore(){
     s += '<line x1="'+(hStubCx-3)+'" y1="'+(hotY-ductH/2-2)+'" x2="'+(hStubCx+3)+'" y2="'+(hotY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(hStubCx-3)+'" y1="'+(hotY-ductH/2-4)+'" x2="'+(hStubCx+3)+'" y2="'+(hotY-ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<g transform="translate('+(hStubCx-9)+','+(hotY-ductH/2-52)+')">'+gfxWrap('sensorStaticPressure', '', 0.55)+'</g>';
+    s += '<g id="readout_spStubHot"></g>';
+    window._schemSpStubHotCx = hStubCx;
+    window._schemSpStubHotY = hotY;
     hotItems.forEach(it=>{ s += drawStation(it, hotY, ductH, sharedDual?'down':undefined); });
   }
   window._schemHotFlip = showSecondRow;
@@ -653,7 +662,25 @@ function updateSchematicReadouts(){
     if(exhaustEl && window._schemExhaustBubbleX!==undefined){ exhaustEl.innerHTML = bubble(window._schemExhaustBubbleX, window._schemExhaustY-20, 26, 'Exhaust Air ('+pn('Exhaust Air','EA')+') Damper', ['EA DPR '+fmt(sim.eaDamperPos,0)+'%', fmt(sim.exhaustCfm,0)+' CFM'], null); }
   }
 
-  // Mode and humidity graphic indicator boxes disabled per user request.
+  // Static pressure sensor info blocks (2/3 duct position)
+  const spTarget = fmt(sp.highStaticSP * 0.8, 2);
+  const effRh = sim.W_supply ? rhFromW(sim.raTemp || 72, sim.W_supply) * 100 : sim.saRH * 100;
+  const spStubMainEl = document.getElementById('readout_spStubMain');
+  if(spStubMainEl && window._schemSpStubMainCx !== undefined){
+    spStubMainEl.innerHTML = bubble(window._schemSpStubMainCx, window._schemSpStubMainY-30, 60, 'Supply Duct (2/3)', 
+      ['SP '+spTarget+'" w.c.', 'SAT '+fmt(sim.satDisplayTemp,1)+'\u00b0F', 'SA-RH '+fmt(effRh,0)+'%', fmt(sim.supplyCfm,0)+' CFM'], null, 70);
+  }
+  const spStubColdEl = document.getElementById('readout_spStubCold');
+  if(spStubColdEl && window._schemSpStubColdCx !== undefined){
+    const cdSat = config.ductType==='dual'? sim.coldDeckTemp : sim.satDisplayTemp;
+    spStubColdEl.innerHTML = bubble(window._schemSpStubColdCx, window._schemSpStubColdY-30, 60, 'Cold Deck (2/3)', 
+      ['SP '+spTarget+'" w.c.', 'CD-SAT '+fmt(cdSat,1)+'\u00b0F', 'CD-RH '+fmt(effRh,0)+'%', fmt(sim.supplyCfm,0)+' CFM'], null, 70);
+  }
+  const spStubHotEl = document.getElementById('readout_spStubHot');
+  if(spStubHotEl && window._schemSpStubHotCx !== undefined){
+    spStubHotEl.innerHTML = bubble(window._schemSpStubHotCx, window._schemSpStubHotY-30, 60, 'Hot Deck (2/3)', 
+      ['SP '+spTarget+'" w.c.', 'HD-SAT '+fmt(sim.hotDeckTemp,1)+'\u00b0F', 'HD-RH '+fmt(effRh,0)+'%', fmt(sim.hotDeckCfm,0)+' CFM'], null, 70);
+  }
 }
 
 function buildSchematic(){
