@@ -1310,6 +1310,7 @@ function buildSimState(){
    SIMULATION TICK
    ============================================================ */
 const DT = 1;
+const DAMPER_SLEW = 100 / 90;
 
 /* Real actuators can't jump instantly — clamp how far a % output can move per tick.
    This also damps out any residual control-loop overshoot into a smooth approach
@@ -1335,7 +1336,6 @@ function tick(){
   const age = sim.age || 0;
   const ageLossPct = getAgeLoss(age);
   const coilEff = 0.85 * (1 - (ageLossPct / 100) * 0.35);
-  const DAMPER_SLEW = 100 / 90;
   let drift = 0;
   if(age >= 10){
     drift = Math.sin(window.simTickCount * 0.05) * 4;
