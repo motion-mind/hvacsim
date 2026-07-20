@@ -96,7 +96,6 @@ function drawStation(it, ductY, ductH, laneFlip){
       if(config.preheatAquastat){ html += '<g id="aquastatIcon" transform="translate('+(cx+26)+','+outward(26)+') scale(0.85)">'+lowLimitGfx(false)+'</g>'; }
     }
     const sensorOffset = (it.id === 'cooling') ? 88 : ((it.id === 'preheat' || it.id === 'hotdeck') ? 36 : 72);
-    html += '<circle cx="'+(cx + sensorOffset)+'" cy="'+ductY+'" r="3" fill="'+BAS.line+'"/>';
     html += '<g id="readout_'+it.id+'_lat"></g>';
     const lbl = it.id==='preheat'?'PREHEAT COIL':it.id==='reheat'?'REHEAT COIL':it.id==='hotdeck'?'HOT DECK COIL':(config.coolingCoils==='dual'?'COOLING COILS 1 & 2':'COOLING COIL');
     html += stationLabel(cx, labelY, lbl);
@@ -421,7 +420,6 @@ function buildSchematicCore(){
       returnFanCx = fanCenter; returnY = ry;
       s += '<g id="readout_returnfan"></g>';
       s += stationLabel(fanCenter, ry+24, config.returnFan==='wall'?'RETURN FAN WALL':'RETURN FAN');
-      s += '<circle cx="'+raSensorX+'" cy="'+ry+'" r="3" fill="'+BAS.line+'"/>';
       s += '<g id="readout_raSensor"></g>';
       if(config.includeEa){
         for(let i=1;i<5;i++){ const yy = (ry-22) + i*(44/5); s += '<line x1="'+(rx0-26)+'" y1="'+yy+'" x2="'+rx0+'" y2="'+(yy-8)+'" stroke="'+BAS.lineSoft+'" stroke-width="2.2"/>'; }
@@ -463,7 +461,6 @@ function buildSchematicCore(){
       returnFanCx = fanCenter; returnY = ry;
       s += '<g id="readout_returnfan"></g>';
       s += stationLabel(fanCenter, ry+24, config.returnFan==='wall'?'RETURN FAN WALL':'RETURN FAN');
-      s += '<circle cx="'+raSensorX+'" cy="'+ry+'" r="3" fill="'+BAS.line+'"/>';
       s += '<g id="readout_raSensor"></g>';
       if(config.includeEa){
         for(let i=1;i<5;i++){ const yy = (ry-22) + i*(44/5); s += '<line x1="'+(rx0-26)+'" y1="'+yy+'" x2="'+rx0+'" y2="'+(yy-8)+'" stroke="'+BAS.lineSoft+'" stroke-width="2.2"/>'; }
