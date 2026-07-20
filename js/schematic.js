@@ -312,7 +312,8 @@ function buildSchematicCore(){
     const cStubStart = ductEnd + 12;
     const cStubW = 40;
     s += horizDuctSVG(cStubStart, coldLaneY-ductH/2, cStubW, ductH, null, null, false, true);
-    s += '<line x1="'+(ductEnd+4)+'" y1="'+(coldLaneY-ductH/2+4)+'" x2="'+(ductEnd+4)+'" y2="'+(coldLaneY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.5"/>';
+    s += '<line x1="'+(ductEnd+2)+'" y1="'+(coldLaneY-ductH/2+4)+'" x2="'+(ductEnd+8)+'" y2="'+(coldLaneY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
+    s += '<line x1="'+(ductEnd+6)+'" y1="'+(coldLaneY-ductH/2+4)+'" x2="'+(ductEnd+12)+'" y2="'+(coldLaneY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     const cStubCx = cStubStart + cStubW/2;
     s += '<line x1="'+cStubCx+'" y1="'+(coldLaneY-ductH/2)+'" x2="'+cStubCx+'" y2="'+(coldLaneY-ductH/2-20)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(cStubCx-3)+'" y1="'+(coldLaneY-ductH/2-2)+'" x2="'+(cStubCx+3)+'" y2="'+(coldLaneY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
@@ -328,7 +329,8 @@ function buildSchematicCore(){
     const stubStart = ductEnd + 12;
     const stubW = 40;
     s += horizDuctSVG(stubStart, coldY-ductH/2, stubW, ductH, null, null, false, true);
-    s += '<line x1="'+(ductEnd+4)+'" y1="'+(coldY-ductH/2+4)+'" x2="'+(ductEnd+4)+'" y2="'+(coldY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.5"/>';
+    s += '<line x1="'+(ductEnd+2)+'" y1="'+(coldY-ductH/2+4)+'" x2="'+(ductEnd+8)+'" y2="'+(coldY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
+    s += '<line x1="'+(ductEnd+6)+'" y1="'+(coldY-ductH/2+4)+'" x2="'+(ductEnd+12)+'" y2="'+(coldY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     const stubCx = stubStart + stubW/2;
     s += '<line x1="'+stubCx+'" y1="'+(coldY-ductH/2)+'" x2="'+stubCx+'" y2="'+(coldY-ductH/2-20)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(stubCx-3)+'" y1="'+(coldY-ductH/2-2)+'" x2="'+(stubCx+3)+'" y2="'+(coldY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
@@ -357,7 +359,8 @@ function buildSchematicCore(){
     const hStubStart = hDuctEnd + 12;
     const hStubW = 40;
     s += horizDuctSVG(hStubStart, hotY-ductH/2, hStubW, ductH, null, null, false, true);
-    s += '<line x1="'+(hDuctEnd+4)+'" y1="'+(hotY-ductH/2+4)+'" x2="'+(hDuctEnd+4)+'" y2="'+(hotY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.5"/>';
+    s += '<line x1="'+(hDuctEnd+2)+'" y1="'+(hotY-ductH/2+4)+'" x2="'+(hDuctEnd+8)+'" y2="'+(hotY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
+    s += '<line x1="'+(hDuctEnd+6)+'" y1="'+(hotY-ductH/2+4)+'" x2="'+(hDuctEnd+12)+'" y2="'+(hotY+ductH/2-4)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     const hStubCx = hStubStart + hStubW/2;
     s += '<line x1="'+hStubCx+'" y1="'+(hotY-ductH/2)+'" x2="'+hStubCx+'" y2="'+(hotY-ductH/2-20)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
     s += '<line x1="'+(hStubCx-3)+'" y1="'+(hotY-ductH/2-2)+'" x2="'+(hStubCx+3)+'" y2="'+(hotY-ductH/2-2)+'" stroke="'+BAS.line+'" stroke-width="1.2"/>';
