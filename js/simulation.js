@@ -746,7 +746,7 @@ function tick(){
       let outPct;
       if(sim.overrideReturnFanSpeed){ sim.pid.returnFlow.reset(); outPct = 0; }
       else if(!rfStartCmd){ sim.pid.returnFlow.reset(); outPct = 0; }
-      else { outPct = sim.pid.returnFlow.update(target, (totalSupplyForReturn - sim.returnCfm), DT, false); }
+      else { outPct = sim.pid.returnFlow.update(target, (totalSupplyForReturn - sim.returnCfm), DT, true); }
       targetReturnPct = rfStartCmd ? (sim.overrideReturnFanSpeed ? sim.overrideReturnFanSpeedVal : clamp(Math.max(outPct,25),25,100)) : 0;
     } else { targetReturnPct = rfStartCmd ? (sim.overrideReturnFanSpeed ? sim.overrideReturnFanSpeedVal : 100) : 0; }
     if(isWireDisconnected('Return Fan Drive Speed Command')) targetReturnPct = 0;
