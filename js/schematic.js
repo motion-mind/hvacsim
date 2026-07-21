@@ -554,7 +554,7 @@ function updateSchematicReadouts(){
       else if(it.id==='filter') lines=['FILTER', activeFaults.dirtyFilter? 'DIRTY':'CLEAN'];
       else if(it.id==='supplyfan') lines=[(config.dualDuctIndependent?'CD FAN ':'SF ')+fmt(sim.supplyFanPct,0)+'%', fmt(sim.supplyCfm,0)+' CFM'];
       else if(it.id==='humid'){ const effRh = sim.W_supply ? rhFromW(sim.raTemp || 72, sim.W_supply) * 100 : sim.saRH * 100; lines=['SA-RH '+fmt(effRh,0)+'%','VLV '+fmt(sim.humidValve,0)+'%']; }
-      else if(it.id==='discharge'){ const effRh = sim.W_supply ? rhFromW(sim.raTemp || 72, sim.W_supply) * 100 : sim.saRH * 100; lines=[(config.ductType==='dual'?'CD-SAT ':'SAT ')+fmt(config.ductType==='dual'?sim.coldDeckTemp:sim.satDisplayTemp,1)+'\u00b0F', 'SA-RH '+fmt(effRh,0)+'%', fmt(sim.supplyCfm,0)+' CFM', 'SP '+fmt(sp.highStaticSP * 0.8, 2)+'"']; accent='#2b6cb0'; }
+      else if(it.id==='discharge'){ const effRh = sim.W_supply ? rhFromW(sim.raTemp || 72, sim.W_supply) * 100 : sim.saRH * 100; const spFluct = 1 + 0.1 * Math.sin((sim.age||0) * 0.07) * Math.sin((sim.age||0) * 0.13); lines=[(config.ductType==='dual'?'CD-SAT ':'SAT ')+fmt(config.ductType==='dual'?sim.coldDeckTemp:sim.satDisplayTemp,1)+'\u00b0F', 'SA-RH '+fmt(effRh,0)+'%', fmt(sim.supplyCfm,0)+' CFM', 'SP '+fmt(sp.highStaticSP * 0.8 * spFluct, 2)+'"']; accent='#2b6cb0'; }
       else if(it.id==='hotOaIntake') lines=['OAT '+fmt(sim.oat,1)+'\u00b0F','OAH '+fmt(sim.oaRH*100,0)+'%','OA '+fmt(sim.hotOaCfm,0)+' CFM'];
       else if(it.id==='hotMixbox') {
         const ry = window._schemReturnY;
@@ -570,7 +570,7 @@ function updateSchematicReadouts(){
       }
       else if(it.id==='hotFilter') lines=['FILTER', activeFaults.hotDeckDirtyFilter? 'DIRTY':'CLEAN'];
       else if(it.id==='hotdeckfan') lines=['HDF '+fmt(sim.hotDeckFanPct,0)+'%', fmt(sim.hotDeckCfm,0)+' CFM'];
-      else if(it.id==='hotdischarge') lines=['HD-SAT '+fmt(sim.hotDeckTemp,1)+'\u00b0F', 'HD-RH '+fmt(rhFromW(sim.hotDeckTemp, sim.W_supply)*100,0)+'%', fmt(sim.hotDeckCfm,0)+' CFM', 'SP '+fmt(sp.highStaticSP * 0.8, 2)+'"'];
+      else if(it.id==='hotdischarge'){ const spFluct = 1 + 0.1 * Math.sin((sim.age||0) * 0.07) * Math.sin((sim.age||0) * 0.13); lines=['HD-SAT '+fmt(sim.hotDeckTemp,1)+'\u00b0F', 'HD-RH '+fmt(rhFromW(sim.hotDeckTemp, sim.W_supply)*100,0)+'%', fmt(sim.hotDeckCfm,0)+' CFM', 'SP '+fmt(sp.highStaticSP * 0.8 * spFluct, 2)+'"']; }
       if(lines) g.innerHTML = actualFlip? bubbleDown(originX, edgeY, tier, it.title, lines, accent, 0) : bubble(originX, edgeY, tier, it.title, lines, accent, 0);
 
       if(it.id === 'mixbox' || it.id === 'hotMixbox') {
