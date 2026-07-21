@@ -68,27 +68,86 @@ const GFX = {
    .graphivac-object .active.reverse .fan .rotating-middle {
    animation:fan-spin-rev 3s linear infinite;
    }
-   @keyframes fan-spin-rev { 100% {transform:rotate(360deg);} }`, markup: `<g fill="#659dc5">
-   <g class="fan">
-     <g id="g8">
-  <path class="fan-background" d="m12.297 5.154c-6.117 0-11.066 4.9492-11.066 11.066 0 6.117 4.9492 11.066 11.066 11.066 5.7137 0 10.408-4.3091 11.003-9.8647h7.525v-12.268h-18.148c-0.12601-0.0043-0.25236 0-0.37941 0z" fill-rule="evenodd" stroke="#000" stroke-width="1px" fill="inherit"></path>
-     </g>
-     <g id="g4148" transform="translate(12.464 16.395)">
-  <g id="g4162" stroke="#000" stroke-width="1.5" fill="none" class="rotating-middle">
-    <path id="use3009" d="m-1.8112-3.9787 3.6227-4.4971"/>
-    <path id="use3011" d="m0.87376-4.2835 5.5741-1.5089"/>
-    <path id="use3013" d="m3.2243-2.9521 5.3965 2.0557"/>
-    <path id="use3015" d="m4.3433-0.4935 3.1575 4.835"/>
-    <path id="use3017" d="m3.8043 2.1547-0.28747 5.7676"/>
-    <path id="use3019" d="m1.8113 3.9787-3.6227 4.4971"/>
-    <path id="use3021" d="m-0.87324 4.2837-5.5741 1.5089"/>
-    <path id="use3023" d="m-3.2242 2.9527-5.3965-2.0559"/>
-    <path id="use3025" d="m-4.3432 0.4935-3.158-4.8353"/>
-    <path id="use3027" d="m-3.8032-2.1541 0.2875-5.7676"/>
-  </g>
-     </g>
+   @keyframes fan-spin { 100% {transform:rotate(360deg);} }
+   @keyframes fan-spin-rev { 100% {transform:rotate(-360deg);} }`, markup: `<g fill="#659dc5">
+    <g class="fan">
+      <g id="g8">
+   <path class="fan-background" d="m12.297 5.154c-6.117 0-11.066 4.9492-11.066 11.066 0 6.117 4.9492 11.066 11.066 11.066 5.7137 0 10.408-4.3091 11.003-9.8647h7.525v-12.268h-18.148c-0.12601-0.0043-0.25236 0-0.37941 0z" fill-rule="evenodd" stroke="#000" stroke-width="1px" fill="inherit"></path>
+      </g>
+      <g id="g4148" transform="translate(12.464 16.395)">
+   <g id="g4162" stroke="#000" stroke-width="1.5" fill="none" class="rotating-middle">
+     <path id="use3009" d="m-1.8112-3.9787 3.6227-4.4971"/>
+     <path id="use3011" d="m0.87376-4.2835 5.5741-1.5089"/>
+     <path id="use3013" d="m3.2243-2.9521 5.3965 2.0557"/>
+     <path id="use3015" d="m4.3433-0.4935 3.1575 4.835"/>
+     <path id="use3017" d="m3.8043 2.1547-0.28747 5.7676"/>
+     <path id="use3019" d="m1.8113 3.9787-3.6227 4.4971"/>
+     <path id="use3021" d="m-0.87324 4.2837-5.5741 1.5089"/>
+     <path id="use3023" d="m-3.2242 2.9527-5.3965-2.0559"/>
+     <path id="use3025" d="m-4.3432 0.4935-3.158-4.8353"/>
+     <path id="use3027" d="m-3.8032-2.1541 0.2875-5.7676"/>
    </g>
- </g>` },
+      </g>
+    </g>
+  </g>` },
+  fanSupply: { css: `.graphivac-object .in-alarm .fan-s {animation:fan-alarm 1s infinite;}
+   @keyframes fan-alarm {
+   0% { fill: red; }
+   50% { fill: #659dc5;}
+   100% { fill: red; }}
+   .graphivac-object .active .fan-s .rotating-middle-s {
+   animation:fan-spin 3s linear infinite;
+   }
+   .graphivac-object .active:not(.in-alarm) .fan-s .fan-background-s {
+   fill: #66c492;
+   }`, markup: `<g fill="#659dc5">
+    <g class="fan-s">
+      <g id="g8s">
+   <path class="fan-background-s" d="m12.297 5.154c-6.117 0-11.066 4.9492-11.066 11.066 0 6.117 4.9492 11.066 11.066 11.066 5.7137 0 10.408-4.3091 11.003-9.8647h7.525v-12.268h-18.148c-0.12601-0.0043-0.25236 0-0.37941 0z" fill-rule="evenodd" stroke="#000" stroke-width="1px" fill="inherit"></path>
+      </g>
+      <g transform="translate(12.464 16.395)">
+   <g stroke="#000" stroke-width="1.5" fill="none" class="rotating-middle-s">
+     <path d="m-1.8112-3.9787 3.6227-4.4971"/>
+     <path d="m0.87376-4.2835 5.5741-1.5089"/>
+     <path d="m3.2243-2.9521 5.3965 2.0557"/>
+     <path d="m4.3433-0.4935 3.1575 4.835"/>
+     <path d="m3.8043 2.1547-0.28747 5.7676"/>
+     <path d="m1.8113 3.9787-3.6227 4.4971"/>
+     <path d="m-0.87324 4.2837-5.5741 1.5089"/>
+     <path d="m-3.2242 2.9527-5.3965-2.0559"/>
+     <path d="m-4.3432 0.4935-3.158-4.8353"/>
+     <path d="m-3.8032-2.1541 0.2875-5.7676"/>
+   </g>
+      </g>
+    </g>
+  </g>` },
+  fanReturn: { css: `.graphivac-object .in-alarm .fan-r {animation:fan-alarm 1s infinite;}
+   .graphivac-object .active .fan-r .rotating-middle-r {
+   animation:fan-spin-rev 3s linear infinite;
+   }
+   .graphivac-object .active:not(.in-alarm) .fan-r .fan-background-r {
+   fill: #66c492;
+   }`, markup: `<g fill="#659dc5">
+    <g class="fan-r">
+      <g id="g8r">
+   <path class="fan-background-r" d="m12.297 5.154c-6.117 0-11.066 4.9492-11.066 11.066 0 6.117 4.9492 11.066 11.066 11.066 5.7137 0 10.408-4.3091 11.003-9.8647h7.525v-12.268h-18.148c-0.12601-0.0043-0.25236 0-0.37941 0z" fill-rule="evenodd" stroke="#000" stroke-width="1px" fill="inherit"></path>
+      </g>
+      <g transform="translate(12.464 16.395)">
+   <g stroke="#000" stroke-width="1.5" fill="none" class="rotating-middle-r">
+     <path d="m-1.8112-3.9787 3.6227-4.4971"/>
+     <path d="m0.87376-4.2835 5.5741-1.5089"/>
+     <path d="m3.2243-2.9521 5.3965 2.0557"/>
+     <path d="m4.3433-0.4935 3.1575 4.835"/>
+     <path d="m3.8043 2.1547-0.28747 5.7676"/>
+     <path d="m1.8113 3.9787-3.6227 4.4971"/>
+     <path d="m-0.87324 4.2837-5.5741 1.5089"/>
+     <path d="m-3.2242 2.9527-5.3965-2.0559"/>
+     <path d="m-4.3432 0.4935-3.158-4.8353"/>
+     <path d="m-3.8032-2.1541 0.2875-5.7676"/>
+   </g>
+      </g>
+    </g>
+  </g>` },
   coolingCoil: { css: `.graphivac-object .in-alarm .cooling-coil {animation:cooling-coil-alarm 1s infinite;}
    @keyframes cooling-coil-alarm {
    0% { fill: red; }
@@ -273,12 +332,26 @@ function gfxWrap(name, stateClasses, scale, uid, flip){
 
 function roundTo10(pct){ return clamp(Math.round(clamp(pct,0,100)/10)*10,0,100); }
 function damperGfx(pct, inAlarm, scale){ return gfxWrap('damper', 'value-'+roundTo10(pct)+(inAlarm?' in-alarm':''), scale||2.1); }
-function fanGfx(status, dir, flip, reverse){
-  const cls = status==='run'? 'active' + (reverse?' reverse':'') : status==='fail'? 'in-alarm' : '';
+function fanGfx(status, dir, flip){
+  const cls = status==='run'? 'active' : status==='fail'? 'in-alarm' : '';
   let arrow = '';
   if(dir==='left'){ arrow = '<path d="M -30,-7 L -42,0 L -30,7 Z" fill="'+BAS.textDim+'" stroke="'+BAS.line+'" stroke-width="0.6"/>'; }
   else if(dir==='right'){ arrow = '<path d="M 30,-7 L 42,0 L 30,7 Z" fill="'+BAS.textDim+'" stroke="'+BAS.line+'" stroke-width="0.6"/>'; }
   return gfxWrap('fan', cls, 1.5, null, flip) + arrow;
+}
+function fanSupplyGfx(status, dir, flip){
+  const cls = status==='run'? 'active' : status==='fail'? 'in-alarm' : '';
+  let arrow = '';
+  if(dir==='left'){ arrow = '<path d="M -30,-7 L -42,0 L -30,7 Z" fill="'+BAS.textDim+'" stroke="'+BAS.line+'" stroke-width="0.6"/>'; }
+  else if(dir==='right'){ arrow = '<path d="M 30,-7 L 42,0 L 30,7 Z" fill="'+BAS.textDim+'" stroke="'+BAS.line+'" stroke-width="0.6"/>'; }
+  return gfxWrap('fanSupply', cls, 1.5, null, flip) + arrow;
+}
+function fanReturnGfx(status, dir, flip){
+  const cls = status==='run'? 'active' : status==='fail'? 'in-alarm' : '';
+  let arrow = '';
+  if(dir==='left'){ arrow = '<path d="M -30,-7 L -42,0 L -30,7 Z" fill="'+BAS.textDim+'" stroke="'+BAS.line+'" stroke-width="0.6"/>'; }
+  else if(dir==='right'){ arrow = '<path d="M 30,-7 L 42,0 L 30,7 Z" fill="'+BAS.textDim+'" stroke="'+BAS.line+'" stroke-width="0.6"/>'; }
+  return gfxWrap('fanReturn', cls, 1.5, null, flip) + arrow;
 }
 function coolingCoilGfx(pct, inAlarm){ const active = pct>2 && !inAlarm; return gfxWrap('coolingCoil', 'value-'+roundTo10(pct)+(inAlarm?' in-alarm':(active?' active':'')), 2.1); }
 function heatingCoilGfx(pct, inAlarm, uid){ const active = pct>2 && !inAlarm; return gfxWrap('heatingCoil', 'value-'+roundTo10(pct)+(inAlarm?' in-alarm':(active?' active':'')), 2.1, uid); }
