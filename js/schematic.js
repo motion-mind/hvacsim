@@ -270,7 +270,6 @@ function buildSchematicCore(){
 
   const usedSymbols = ['damper','fan','fanSupply','fanReturn','coolingCoil','heatingCoil','humidifier','lowLimit','globeValve','vfd','pump'];
   let s = '<defs><style>'+collectGfxCss(usedSymbols)+' .safetext { font-family:Arial;font-size:8px;font-weight:700;text-anchor:middle; } .safetext.tripped { fill:#fff; } @keyframes safetyFlash { 0%,100% { fill:#e74c3c; } 50% { fill:#c0392b; } } .safety-blink { animation:safetyFlash 1s infinite; }</style></defs>';
-  s += '<rect x="0" y="0" width="'+viewW+'" height="'+canvasH+'" fill="'+BAS.bg+'"/>';
 
   const ductStart = (hasReturn && !config.includeOa) ? (items[0].x - 39) : (items[0].x - 22);
   const preforkItems = sharedDual? items.slice(0, coldLaneStartIdx) : items;

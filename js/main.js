@@ -73,7 +73,7 @@ function enablePanZoom(){
 enablePanZoom();`;
   popOutWindow.document.write('<!DOCTYPE html><html><head><title>AHU-1 Schematic</title>'+
     '<style>body{margin:0;background:#1a1c1e;overflow:hidden;height:100vh;}'+
-    'body.light{background:#f4f5f7;}#schematicSvg{display:block;width:100%;height:100vh;cursor:grab;}</style>'+
+    'body.light{background:#f4f5f7;}#schematicSvg{display:block;width:100%;height:100vh;cursor:grab;background:var(--bg);}</style>'+
     cssLinks+'</head><body'+(isLight?' class="light"':'')+'>');
   popOutWindow.document.write(svg.outerHTML);
   popOutWindow.document.write('<script>'+panZoomJs+'</script></body></html>');
