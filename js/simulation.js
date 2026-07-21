@@ -117,8 +117,10 @@ function buildSimState(){
       for(let i=0;i<config.returnFanCount;i++) sim.returnFans.push({id:i+1, fail:false, run:false});
     } else { sim.returnFans.push({id:1, fail:false, run:false}); }
   }
-  if(config.ductType==='dual' && config.dualDuctIndependent && config.supplyFan==='wall'){
-    for(let i=0;i<config.supplyFanCount;i++) sim.hotDeckFans.push({id:i+1, fail:false, run:false});
+  if(config.ductType==='dual' && config.dualDuctIndependent){
+    if(config.supplyFan==='wall'){
+      for(let i=0;i<config.supplyFanCount;i++) sim.hotDeckFans.push({id:i+1, fail:false, run:false});
+    } else { sim.hotDeckFans.push({id:1, fail:false, run:false}); }
   }
   sim.vav = [];
   let zoneIndex = 1;
