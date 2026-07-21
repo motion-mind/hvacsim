@@ -93,44 +93,7 @@
       </h2>
       <span id="sooToggleArrow" style="font-size:16px;color:var(--text-faint);transition:transform 0.2s;">&#9662;</span>
     </div>
-    <div id="sooContent" style="display:none;margin-top:16px;font-size:13px;line-height:1.6;color:var(--text-dim);border-top:1px solid var(--line-soft);padding-top:16px;">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;">
-        <div>
-          <h3 style="color:var(--text);margin-top:0;margin-bottom:8px;font-size:14px;border-left:3px solid var(--blue);padding-left:8px;">1. Fan &amp; Ventilation Control</h3>
-          <ul style="margin:0;padding-left:16px;">
-            <li><strong>Unit Enable:</strong> Supply fan starts when toggled. Return fan is sized at 35% of supply fan bank capacity and starts if configured.</li>
-            <li><strong>VFD Control:</strong> Speed modulates to maintain setpoint. Supply fan VFD has a 120-second ramp speed; return fan VFD has a 90-second ramp speed.</li>
-            <li><strong>Starter Control:</strong> Fan runs at 100% capacity; dampers modulate air flow.</li>
-            <li><strong>Ventilation / Economizer:</strong> Dampers modulate to maintain mixed-air temp setpoint (economizer active when OAT is favorable).</li>
-          </ul>
-        </div>
-        <div>
-          <h3 style="color:var(--text);margin-top:0;margin-bottom:8px;font-size:14px;border-left:3px solid var(--green);padding-left:8px;">2. Temperature Control</h3>
-          <ul style="margin:0;padding-left:16px;">
-            <li><strong>Preheat Coil:</strong> Modulates to keep coil leaving air temp above 38&deg;F.</li>
-            <li><strong>Cooling Coil:</strong> Modulates to maintain supply/cold-deck SAT at setpoint (typically 55&deg;F).</li>
-            <li><strong>Reheat Coil (Single-Duct):</strong> Modulates to maintain supply air temperature setpoint.</li>
-            <li><strong>Hot Deck Coil (Dual-Duct):</strong> Modulates to maintain hot-deck temperature setpoint.</li>
-          </ul>
-        </div>
-        <div>
-          <h3 style="color:var(--text);margin-top:0;margin-bottom:8px;font-size:14px;border-left:3px solid var(--yellow);padding-left:8px;">3. Humidity &amp; Room Reset</h3>
-          <ul style="margin:0;padding-left:16px;">
-            <li><strong>Humidification:</strong> Modulates steam valve to track Return RH against low limit setpoint. Clamps single-duct supply RH to &le;85%.</li>
-            <li><strong>Dehumidification:</strong> Triggers if Return RH exceeds high limit, or if OR/PR space RH exceeds 50%. Limits SAT/Cold Deck to &le;60&deg;F, clamps box reheats to &le;Zone SP + 5&deg;F, and locks hot deck OA.</li>
-            <li><strong>OR/PR Reset:</strong> Space RH &gt;50% resets zone temp SP up by up to 3&deg;F to drop local relative humidity.</li>
-          </ul>
-        </div>
-        <div>
-          <h3 style="color:var(--text);margin-top:0;margin-bottom:8px;font-size:14px;border-left:3px solid var(--red);padding-left:8px;">4. Safety &amp; Lockout Sequences</h3>
-          <ul style="margin:0;padding-left:16px;">
-            <li><strong>Freezestat:</strong> Shuts down fans, forces heating valves 100% open, and latches if coil temp falls below 38&deg;F.</li>
-            <li><strong>High Static:</strong> Trips and latches if duct pressure exceeds 2.5" w.g., shutting down VFDs.</li>
-            <li><strong>Aquastat:</strong> Trips preheat booster pumps on water flow failure to prevent freeze-ups.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+    <div id="sooContent" style="display:none;margin-top:16px;font-size:13px;line-height:1.6;color:var(--text-dim);border-top:1px solid var(--line-soft);padding-top:16px;"></div>
   </div>
 
   <div class="panel">

@@ -158,6 +158,63 @@ function renderSetpoints(){
   });
 }
 
+function renderSoo(){
+  const el = document.getElementById('sooContent');
+  if(!el) return;
+  const c = config;
+  const ductLabel = c.ductType==='dual' ? (c.dualDuctIndependent?'Independent Dual-Duct':'Shared Dual-Duct') : 'Single-Duct';
+  const fanLabel = c.driveType==='vfd' ? 'VFD' : 'Starter';
+  const supplyFanLabel = c.supplyFan==='wall' ? (c.supplyFanCount+' fan wall') : 'single fan';
+  const sections = [];
+
+  // 1. Fan & Ventilation
+  let fanItems = [];
+  fanItems.push('Unit Enable: Supply fan starts when toggled' + (c.airSystem==='return' ? '. Return fan starts when configured.' : ''));
+  if(c.driveType==='vfd'){
+    fanItems.push('VFD Control: Supply fan speed modulates to maintain '+(c.controlType==='cfm'?'CFM':'static pressure')+' setpoint. 120-second ramp.');
+    if(c.airSystem==='return') fanItems.push('Return fan VFD modulates to track OA CFM setpoint. 90-second ramp.');
+  } else {
+    fanItems.push('Starter Control: Fan runs at 100%; supply duct damper modulates airflow.');
+  }
+  if(c.includeOa){
+    if(c.airSystem==='return') fanItems.push('Economizer: Dampers modulate for free cooling when OAT is below return temp and enthalpy is favorable.');
+    else fanItems.push('Outside Air: Fixed 100% OA intake.');
+  }
+  if(c.preheat) fanItems.push('Preheat coil protects against freezing when OA is cold.');
+  sections.push({title:'Fan & Ventilation Control', color:'var(--blue)', items:fanItems});
+
+  // 2. Temperature Control
+  let tempItems = [];
+  if(c.preheat) tempItems.push('Preheat Coil: Modulates to maintain leaving air temp at setpoint (default '+sp.preheatDischargeSP+'\u00b0F). Protects downstream coils from freezing.');
+  tempItems.push('Cooling Coil'+(c.coolingCoils==='dual'?'s 1 & 2':'')+': Modulates to maintain '+(c.ductType==='dual'?'cold-deck ':'')+'supply temp at setpoint (default '+sp.coolingDischargeSP+'\u00b0F).'+(c.coolingCoils==='dual'?' Stage 2 engages when coil 1 exceeds 85%.':''));
+  if(c.ductType==='single' && c.reheat) tempItems.push('Reheat Coil (AHU-level): Modulates to maintain space temp at setpoint (default '+sp.reheatSpaceSP+'\u00b0F) for warm-air supply.');
+  if(c.ductType==='dual') tempItems.push('Hot Deck Coil: Modulates to maintain hot-deck discharge temp at setpoint (default '+sp.hotDeckSP+'\u00b0F).');
+  if(c.ductType==='single') tempItems.push('Terminal Unit Reheat: Each VAV box reheat coil (hot-water or electric) modulates on zone temperature error below setpoint.');
+  sections.push({title:'Temperature Control', color:'var(--green)', items:tempItems});
+
+  // 3. Humidity
+  let humItems = [];
+  if(c.steamHumid) humItems.push('Humidification: Steam valve modulates to maintain return air RH above low limit (default '+sp.humidityMinSP+'%).');
+  humItems.push('Dehumidification: Active when return RH exceeds high limit (default '+sp.humidityMaxSP+'%). Lowers supply temp setpoint for enhanced latent removal.');
+  if(c.vav && c.vav.some(b => b.type==='or' || b.type==='pr')) humItems.push('OR/PR Humidity Reset: Zone RH >50% raises effective temp setpoint up to 3\u00b0F to reduce relative humidity in critical rooms.');
+  sections.push({title:'Humidity Control', color:'var(--yellow)', items:humItems});
+
+  // 4. Safety
+  let safItems = [];
+  if(c.includeOa) safItems.push('Freezestat: Latching shutdown of fans and 100% heating valve open if discharge temp falls below setpoint (default '+sp.freezestatSP+'\u00b0F). 2\u00b0F recovery hysteresis.');
+  safItems.push('High Static Pressure: Latching shutdown if duct static exceeds setpoint (default '+sp.highStaticSP+'" w.g.). Resets via safety latch button.');
+  if(c.preheat && c.preheatAquastat) safItems.push('Aquastat: Latching shutdown of preheat booster pump if water temp drops below setpoint (default '+sp.aquastatSP+'\u00b0F).');
+  if(c.driveType==='vfd') safItems.push('Dirty Filter: A clogged filter increases static pressure, causing VFD speed to rise.');
+  sections.push({title:'Safety & Lockout Sequences', color:'var(--red)', items:safItems});
+
+  const headerHtml = '<div style="margin-bottom:12px;color:var(--text-faint);font-size:12px;">Configuration: '+ductLabel+' &middot; '+supplyFanLabel+' &middot; '+fanLabel+(c.airSystem==='return'?' &middot; Return Air':' &middot; 100% OA')+'</div>';
+  const gridHtml = sections.map(s => {
+    const listHtml = s.items.map(i => '<li>'+i+'</li>').join('');
+    return '<div><h3 style="color:var(--text);margin-top:0;margin-bottom:8px;font-size:14px;border-left:3px solid '+s.color+';padding-left:8px;">'+s.title+'</h3><ul style="margin:0;padding-left:16px;">'+listHtml+'</ul></div>';
+  }).join('');
+  el.innerHTML = headerHtml + '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;">'+gridHtml+'</div>';
+}
+
 function renderFanStatus(){
   const el = document.getElementById('fanStatusArea');
   let html = '';

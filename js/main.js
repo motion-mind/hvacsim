@@ -41,6 +41,7 @@ function applyConfiguration(){
     (config.controlType==='cfm'?'CFM CONTROL':'STATIC PRESSURE CONTROL');
   const ahuIdSub = document.getElementById('ahuIdSub');
   if(ahuIdSub) ahuIdSub.textContent = config.airSystem==='oa100'?'100% OUTSIDE AIR':'RETURN AIR SYSTEM';
+  if(typeof renderSoo === 'function') renderSoo();
   const slider = document.getElementById('oatSlider');
   slider.value = sim.oat;
   syncOatReadout();
@@ -166,7 +167,7 @@ document.getElementById('ageSlider').addEventListener('input', (e)=>{ sim.ageTar
 document.getElementById('sooHeader').addEventListener('click', ()=>{
   const content = document.getElementById('sooContent');
   const arrow = document.getElementById('sooToggleArrow');
-  if(content.style.display==='none'){ content.style.display='block'; arrow.style.transform='rotate(180deg)'; }
+  if(content.style.display==='none'){ content.style.display='block'; arrow.style.transform='rotate(180deg)'; if(typeof renderSoo === 'function') renderSoo(); }
   else { content.style.display='none'; arrow.style.transform='rotate(0deg)'; }
 });
 
