@@ -25,7 +25,7 @@ function renderFlowReadings(){
   } else { html += readingCard('Outside Air CFM', fmt(sim.oaCfm,0), 'cfm', false); }
   const spFluct = 1 + 0.1 * Math.sin((sim.age||0) * 0.07) * Math.sin((sim.age||0) * 0.13);
   const driveFrac = config.driveType==='vfd' ? (sim.supplyFanPct/100) : (sim.supplyDamperPos/100);
-  html += readingCard('Static Pressure', fmt(driveFrac * sp.highStaticSP * 0.8 * spFluct, 2), 'in. w.c.', sim.staticPressureDisplay>sp.highStaticSP*0.9);
+  html += readingCard('Static Pressure', fmt(driveFrac * sp.highStaticSP * 0.9 * spFluct, 2), 'in. w.c.', sim.staticPressureDisplay>sp.highStaticSP*0.9);
   el.innerHTML = html;
 }
 
