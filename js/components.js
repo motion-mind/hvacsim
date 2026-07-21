@@ -345,7 +345,7 @@ function fanSupplyGfx(status, dir, flip){
   let arrow = '';
   if(dir==='left'){ arrow = '<path d="M -30,-7 L -42,0 L -30,7 Z" fill="'+BAS.textDim+'" stroke="'+BAS.line+'" stroke-width="0.6"/>'; }
   else if(dir==='right'){ arrow = '<path d="M 30,-7 L 42,0 L 30,7 Z" fill="'+BAS.textDim+'" stroke="'+BAS.line+'" stroke-width="0.6"/>'; }
-  return gfxWrap('fanSupply', cls, 1.5, null, flip) + arrow;
+  return gfxWrap('fanReturn', cls, 1.5, null, true) + arrow;
 }
 function fanReturnGfx(status, dir, flip){
   const cls = status==='run'? 'active' : status==='fail'? 'in-alarm' : '';
