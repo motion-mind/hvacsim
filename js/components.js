@@ -370,7 +370,8 @@ function stationLabel(cx,y,text){
   return '<text x="'+cx+'" y="'+(y+16)+'" font-family="Arial" font-size="9.5" text-anchor="middle" fill="'+BAS.textDim+'" letter-spacing=".02em">'+text+'</text>';
 }
 
-function bubble(cx, topY, tier, title, lines, accent, dx = 0){
+function bubble(cx, topY, tier, title, lines, accent, dx = 0, scale = 0.5){
+  const s = scale;
   let maxTextW = 0;
   lines.forEach((l, idx) => {
     let w = 0;
@@ -385,13 +386,14 @@ function bubble(cx, topY, tier, title, lines, accent, dx = 0){
   const by = topY - tier - bh;
   const bx = cx + dx;
   let html = '<line x1="'+cx+'" y1="'+topY+'" x2="'+bx+'" y2="'+(by+bh)+'" stroke="'+BAS.lineSoft+'" stroke-width="1"/>'+
-    '<rect x="'+(bx-bw/2)+'" y="'+by+'" width="'+bw+'" height="'+bh+'" rx="3" fill="'+BAS.bubbleFill+'" stroke="'+(accent||BAS.bubbleStroke)+'" stroke-width="1.3"/>';
-  lines.forEach((l,i)=>{ html += '<text x="'+bx+'" y="'+(by+14+i*13)+'" font-family="Arial, sans-serif" font-size="10.5" text-anchor="middle" fill="'+BAS.text+'" font-weight="'+(i===0?700:400)+'">'+l+'</text>'; });
+    '<g transform="translate('+bx+','+by+') scale('+s+')"><rect x="'+(0-bw/2)+'" y="0" width="'+bw+'" height="'+bh+'" rx="3" fill="'+BAS.bubbleFill+'" stroke="'+(accent||BAS.bubbleStroke)+'" stroke-width="1.3"/>'+
+    lines.map((l,i)=>'<text x="0" y="'+(14+i*13)+'" font-family="Arial, sans-serif" font-size="10.5" text-anchor="middle" fill="'+BAS.text+'" font-weight="'+(i===0?700:400)+'">'+l+'</text>').join('')+'</g>';
   html += '<title>'+title+'</title>';
   return html;
 }
 
-function bubbleDown(cx, botY, tier, title, lines, accent, dx = 0){
+function bubbleDown(cx, botY, tier, title, lines, accent, dx = 0, scale = 0.5){
+  const s = scale;
   let maxTextW = 0;
   lines.forEach((l, idx) => {
     let w = 0;
@@ -406,13 +408,14 @@ function bubbleDown(cx, botY, tier, title, lines, accent, dx = 0){
   const by = botY + tier;
   const bx = cx + dx;
   let html = '<line x1="'+cx+'" y1="'+botY+'" x2="'+bx+'" y2="'+by+'" stroke="'+BAS.lineSoft+'" stroke-width="1"/>'+
-    '<rect x="'+(bx-bw/2)+'" y="'+by+'" width="'+bw+'" height="'+bh+'" rx="3" fill="'+BAS.bubbleFill+'" stroke="'+(accent||BAS.bubbleStroke)+'" stroke-width="1.3"/>';
-  lines.forEach((l,i)=>{ html += '<text x="'+bx+'" y="'+(by+14+i*13)+'" font-family="Arial, sans-serif" font-size="10.5" text-anchor="middle" fill="'+BAS.text+'" font-weight="'+(i===0?700:400)+'">'+l+'</text>'; });
+    '<g transform="translate('+bx+','+by+') scale('+s+')"><rect x="'+(0-bw/2)+'" y="0" width="'+bw+'" height="'+bh+'" rx="3" fill="'+BAS.bubbleFill+'" stroke="'+(accent||BAS.bubbleStroke)+'" stroke-width="1.3"/>'+
+    lines.map((l,i)=>'<text x="0" y="'+(14+i*13)+'" font-family="Arial, sans-serif" font-size="10.5" text-anchor="middle" fill="'+BAS.text+'" font-weight="'+(i===0?700:400)+'">'+l+'</text>').join('')+'</g>';
   html += '<title>'+title+'</title>';
   return html;
 }
 
-function bubbleLeft(cx, cy, dx, title, lines, accent){
+function bubbleLeft(cx, cy, dx, title, lines, accent, scale = 0.5){
+  const s = scale;
   let maxTextW = 0;
   lines.forEach((l, idx) => {
     let w = 0;
@@ -427,8 +430,8 @@ function bubbleLeft(cx, cy, dx, title, lines, accent){
   const by = cy - bh/2;
   const bx = cx + dx;
   let html = '<line x1="'+cx+'" y1="'+cy+'" x2="'+(bx+bw/2)+'" y2="'+cy+'" stroke="'+BAS.lineSoft+'" stroke-width="1"/>'+
-    '<rect x="'+(bx-bw/2)+'" y="'+by+'" width="'+bw+'" height="'+bh+'" rx="3" fill="'+BAS.bubbleFill+'" stroke="'+(accent||BAS.bubbleStroke)+'" stroke-width="1.3"/>';
-  lines.forEach((l,i)=>{ html += '<text x="'+bx+'" y="'+(by+14+i*13)+'" font-family="Arial, sans-serif" font-size="10.5" text-anchor="middle" fill="'+BAS.text+'" font-weight="'+(i===0?700:400)+'">'+l+'</text>'; });
+    '<g transform="translate('+bx+','+by+') scale('+s+')"><rect x="'+(0-bw/2)+'" y="0" width="'+bw+'" height="'+bh+'" rx="3" fill="'+BAS.bubbleFill+'" stroke="'+(accent||BAS.bubbleStroke)+'" stroke-width="1.3"/>'+
+    lines.map((l,i)=>'<text x="0" y="'+(14+i*13)+'" font-family="Arial, sans-serif" font-size="10.5" text-anchor="middle" fill="'+BAS.text+'" font-weight="'+(i===0?700:400)+'">'+l+'</text>').join('')+'</g>';
   html += '<title>'+title+'</title>';
   return html;
 }
