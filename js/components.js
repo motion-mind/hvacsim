@@ -64,10 +64,6 @@ const GFX = {
    .graphivac-object .active:not(.in-alarm) .fan .fan-background {
    fill: #66c492;
    }
-   @keyframes fan-spin { 100% {transform:rotate(-360deg);} }
-   .graphivac-object .active.reverse .fan .rotating-middle {
-   animation:fan-spin-rev 3s linear infinite;
-   }
    @keyframes fan-spin { 100% {transform:rotate(360deg);} }
    @keyframes fan-spin-rev { 100% {transform:rotate(-360deg);} }`, markup: `<g fill="#659dc5">
     <g class="fan">
@@ -96,7 +92,7 @@ const GFX = {
    50% { fill: #659dc5;}
    100% { fill: red; }}
     .graphivac-object .active .fan-s .rotating-middle-s {
-    animation:fan-spin-rev 3s linear infinite;
+    animation:fan-spin 3s linear infinite;
     }
    .graphivac-object .active:not(.in-alarm) .fan-s .fan-background-s {
    fill: #66c492;
