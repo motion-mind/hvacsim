@@ -111,9 +111,11 @@ function buildSimState(){
   };
   if(config.supplyFan==='wall'){
     for(let i=0;i<config.supplyFanCount;i++) sim.supplyFans.push({id:i+1, fail:false, run:false});
-  }
-  if(config.returnFan==='wall' && config.airSystem!=='oa100'){
-    for(let i=0;i<config.returnFanCount;i++) sim.returnFans.push({id:i+1, fail:false, run:false});
+  } else { sim.supplyFans.push({id:1, fail:false, run:false}); }
+  if(config.returnFanCount > 0 && config.airSystem!=='oa100'){
+    if(config.returnFan==='wall'){
+      for(let i=0;i<config.returnFanCount;i++) sim.returnFans.push({id:i+1, fail:false, run:false});
+    } else { sim.returnFans.push({id:1, fail:false, run:false}); }
   }
   if(config.ductType==='dual' && config.dualDuctIndependent && config.supplyFan==='wall'){
     for(let i=0;i<config.supplyFanCount;i++) sim.hotDeckFans.push({id:i+1, fail:false, run:false});
