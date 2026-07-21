@@ -752,6 +752,9 @@ function tick(){
     sim.returnFanPct = slew(sim.returnFanPct, targetReturnPct, returnFanSlew);
     sim.returnFans.forEach(f=>{ f.run = rfStartCmd && !f.fail; });
     sim.returnCfm = rfStartCmd ? (0.75 * sp.maxCfmSP) * (sim.returnFanPct/100) * capFracReturn * (0.97+0.06*Math.random()) * flowDegradation : 0;
+  } else if(config.airSystem==='return' && config.returnFanCount === 0){
+    sim.returnCfm = wantRun && sim.raDamperPos > 0 ? Math.max(0, sim.supplyCfm - sim.oaCfm) : 0;
+    sim.returnFanPct = 0;
   } else { sim.returnCfm = NaN; }
 
   // Freezestat recovery: after reset, prevent re-trip until PHC-LAT rises back above
