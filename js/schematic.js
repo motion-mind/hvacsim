@@ -169,7 +169,8 @@ function buildSchematicCore(){
   const independent = config.ductType==='dual' && config.dualDuctIndependent;
   const sharedDual = config.ductType==='dual' && !independent;
   const showSecondRow = independent || sharedDual;
-  const hasReturn = config.airSystem==='return' && config.returnFanCount > 0;
+  const hasReturn = config.airSystem==='return';
+  const hasReturnFan = hasReturn && config.returnFanCount > 0;
   const ductH = 60;
   const laneGap = 24;
   const laneOffset = ductH/2 + laneGap/2;
@@ -400,14 +401,17 @@ function buildSchematicCore(){
       if(rx0 < retJctL - 1) s += arrowFlowLine(rx0, ry, retJctL, ry, 'rev', 'flow_returnExhaust', 'flow-rev');
       s += arrowFlowLine(retJctR, ry, rx1, ry, 'rev', 'flow_returnMain', 'flow-rev');
       s += '<text x="'+((rx0+rx1)/2)+'" y="'+(ry+54)+'" font-family="Arial" font-size="9.5" text-anchor="middle" fill="'+BAS.textDim+'">'+pn('Return Air','RA').toUpperCase()+' — SERVES BOTH DECKS</text>';
-      for(let i=0;i<returnFanCount;i++){ const fx = returnFanCount===1? fanCenter : (Math.max(riserX,hRiserX)+90+i*28); s += '<g id="fanicon_return_'+i+'" transform="translate('+fx+','+ry+')">'+fanReturnGfx('off', null, true)+'</g>'; }
-      if(config.driveType==='vfd'){
-        if(config.singleDrive || returnFanCount===1){ s += '<g id="vfdIcon_return" transform="translate('+(fanCenter+34)+','+(ry-20)+') scale(0.8)">'+gfxWrap('vfd','','1','return')+'</g>'; }
-        else { for(let i=0;i<returnFanCount;i++){ const fx = Math.max(riserX,hRiserX)+90+i*28; s += '<g id="vfdIcon_return_'+i+'" transform="translate('+(fx-10)+','+(ry-45)+') scale(0.6)">'+gfxWrap('vfd','','1','return_'+i)+'</g>'; } }
+      if(hasReturnFan){
+        for(let i=0;i<returnFanCount;i++){ const fx = returnFanCount===1? fanCenter : (Math.max(riserX,hRiserX)+90+i*28); s += '<g id="fanicon_return_'+i+'" transform="translate('+fx+','+ry+')">'+fanReturnGfx('off', null, true)+'</g>'; }
+        if(config.driveType==='vfd'){
+          if(config.singleDrive || returnFanCount===1){ s += '<g id="vfdIcon_return" transform="translate('+(fanCenter+34)+','+(ry-20)+') scale(0.8)">'+gfxWrap('vfd','','1','return')+'</g>'; }
+          else { for(let i=0;i<returnFanCount;i++){ const fx = Math.max(riserX,hRiserX)+90+i*28; s += '<g id="vfdIcon_return_'+i+'" transform="translate('+(fx-10)+','+(ry-45)+') scale(0.6)">'+gfxWrap('vfd','','1','return_'+i)+'</g>'; } }
+        }
+        s += '<g id="readout_returnfan"></g>';
       }
       returnFanCx = fanCenter; returnY = ry;
-      s += '<g id="readout_returnfan"></g>';
-      s += stationLabel(fanCenter, ry+24, config.returnFan==='wall'?'RETURN FAN WALL':'RETURN FAN');
+      if(hasReturnFan) s += stationLabel(fanCenter, ry+24, config.returnFan==='wall'?'RETURN FAN WALL':'RETURN FAN');
+      else s += stationLabel(fanCenter, ry+24, 'RETURN DUCT (PASSIVE)');
       s += '<g id="readout_raSensor"></g>';
       if(config.includeEa){
         s += '<g id="eaDamperIcon" transform="translate('+exhaustX+','+ry+')">'+damperGfx(0,false,1.3)+'</g>';
@@ -440,14 +444,17 @@ function buildSchematicCore(){
       s += arrowFlowLine(riserX, riserTopY, riserX, riserBotY, 'rev', 'flow_coldRiser', 'flow-rev');
       const riserMidY = (riserTopY+riserBotY)/2;
       if(config.includeOa) s += '<g id="raDamperIcon_mixbox" transform="translate('+riserX+','+riserMidY+') rotate(90)">'+damperGfx(0,false)+'</g>';
-      for(let i=0;i<returnFanCount;i++){ const fx = returnFanCount===1? fanCenter : (riserX+90+i*28); s += '<g id="fanicon_return_'+i+'" transform="translate('+fx+','+ry+')">'+fanReturnGfx('off', null, true)+'</g>'; }
-      if(config.driveType==='vfd'){
-        if(config.singleDrive || returnFanCount===1){ s += '<g id="vfdIcon_return" transform="translate('+(fanCenter+34)+','+(ry-20)+') scale(0.8)">'+gfxWrap('vfd','','1','return')+'</g>'; }
-        else { for(let i=0;i<returnFanCount;i++){ const fx = riserX+90+i*28; s += '<g id="vfdIcon_return_'+i+'" transform="translate('+(fx-10)+','+(ry-45)+') scale(0.6)">'+gfxWrap('vfd','','1','return_'+i)+'</g>'; } }
+      if(hasReturnFan){
+        for(let i=0;i<returnFanCount;i++){ const fx = returnFanCount===1? fanCenter : (riserX+90+i*28); s += '<g id="fanicon_return_'+i+'" transform="translate('+fx+','+ry+')">'+fanReturnGfx('off', null, true)+'</g>'; }
+        if(config.driveType==='vfd'){
+          if(config.singleDrive || returnFanCount===1){ s += '<g id="vfdIcon_return" transform="translate('+(fanCenter+34)+','+(ry-20)+') scale(0.8)">'+gfxWrap('vfd','','1','return')+'</g>'; }
+          else { for(let i=0;i<returnFanCount;i++){ const fx = riserX+90+i*28; s += '<g id="vfdIcon_return_'+i+'" transform="translate('+(fx-10)+','+(ry-45)+') scale(0.6)">'+gfxWrap('vfd','','1','return_'+i)+'</g>'; } }
+        }
+        s += '<g id="readout_returnfan"></g>';
       }
       returnFanCx = fanCenter; returnY = ry;
-      s += '<g id="readout_returnfan"></g>';
-      s += stationLabel(fanCenter, ry+24, config.returnFan==='wall'?'RETURN FAN WALL':'RETURN FAN');
+      if(hasReturnFan) s += stationLabel(fanCenter, ry+24, config.returnFan==='wall'?'RETURN FAN WALL':'RETURN FAN');
+      else s += stationLabel(fanCenter, ry+24, 'RETURN DUCT (PASSIVE)');
       s += '<g id="readout_raSensor"></g>';
       if(config.includeEa){
         s += '<g id="eaDamperIcon" transform="translate('+exhaustX+','+ry+')">'+damperGfx(0,false,1.3)+'</g>';
@@ -628,11 +635,13 @@ function updateSchematicReadouts(){
     else { const el=document.getElementById('fanicon_hotdeck_0'); if(el) el.innerHTML=fanSupplyGfx(sim.hotDeckFanPct>0?'run':'off'); }
   }
 
-  if(config.airSystem==='return' && config.returnFanCount > 0){
-    if(sim.returnFans.length){ sim.returnFans.forEach((f,i)=>{ const el=document.getElementById('fanicon_return_'+i); if(el) el.innerHTML=fanReturnGfx(f.fail?'fail':(f.run?'run':'off'), null, true); }); }
-    else { const el=document.getElementById('fanicon_return_0'); if(el) el.innerHTML=fanReturnGfx(sim.returnFanPct>0?'run':'off', null, true); }
-    const rg = document.getElementById('readout_returnfan');
-    if(rg && window._schemReturnFanCx!==null){ rg.innerHTML = bubble(window._schemReturnFanCx, window._schemReturnY-22, 30, pn('Return Air','RA')+' Fan', ['RF '+fmt(sim.returnFanPct,0)+'%', fmt(sim.returnCfm,0)+' CFM'], null); }
+  if(config.airSystem==='return'){
+    if(config.returnFanCount > 0){
+      if(sim.returnFans.length){ sim.returnFans.forEach((f,i)=>{ const el=document.getElementById('fanicon_return_'+i); if(el) el.innerHTML=fanReturnGfx(f.fail?'fail':(f.run?'run':'off'), null, true); }); }
+      else { const el=document.getElementById('fanicon_return_0'); if(el) el.innerHTML=fanReturnGfx(sim.returnFanPct>0?'run':'off', null, true); }
+      const rg = document.getElementById('readout_returnfan');
+      if(rg && window._schemReturnFanCx!==null){ rg.innerHTML = bubble(window._schemReturnFanCx, window._schemReturnY-22, 30, pn('Return Air','RA')+' Fan', ['RF '+fmt(sim.returnFanPct,0)+'%', fmt(sim.returnCfm,0)+' CFM'], null); }
+    }
     const raSensorEl = document.getElementById('readout_raSensor');
     if(raSensorEl && window._schemRaSensorX!==undefined){
       const isDualInd = config.ductType==='dual' && config.dualDuctIndependent;
