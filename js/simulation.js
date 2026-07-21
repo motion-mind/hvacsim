@@ -231,9 +231,9 @@ function tick(){
   sim.wantRunCold = wantRunCold;
   sim.wantRunHot = wantRunHot;
   const wantRun = wantRunCold;
-  const sfStartCmd = sim.overrideSupplyFanStart ? sim.overrideSupplyFanStartVal : wantRun;
-  const hdStartCmd = sim.overrideHotDeckFanStart ? sim.overrideHotDeckFanStartVal : wantRunHot;
-  const rfStartCmd = sim.overrideReturnFanStart ? sim.overrideReturnFanStartVal : (wantRunCold || wantRunHot);
+  const sfStartCmd = (sim.overrideSupplyFanStart ? sim.overrideSupplyFanStartVal : wantRun) || sim.overrideSupplyFanSpeed;
+  const hdStartCmd = (sim.overrideHotDeckFanStart ? sim.overrideHotDeckFanStartVal : wantRunHot) || sim.overrideHotDeckFanSpeed;
+  const rfStartCmd = (sim.overrideReturnFanStart ? sim.overrideReturnFanStartVal : (wantRunCold || wantRunHot)) || sim.overrideReturnFanSpeed;
   const loadBias = 72 + (sim.oat-55)*0.22;
 
   if(sim.vav && sim.vav.length > 0){
