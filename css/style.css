@@ -244,7 +244,7 @@ table.sp tr:last-child td{border-bottom:none;}
   color:var(--text-dim);padding:3px 7px;border-radius:3px;cursor:pointer;}
 .safety-chip button:hover{color:var(--cyan);border-color:var(--cyan-dim);}
 
-.fanwall{display:flex;gap:8px;flex-wrap:wrap;}
+.fanwall{display:flex;gap:8px 16px;flex-wrap:wrap;justify-content:space-evenly;padding-bottom:8px;}
 .fan-unit{
   width:64px;height:64px;border-radius:6px;border:1px solid var(--line-soft);background:var(--panel-inset);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:var(--mono);
