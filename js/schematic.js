@@ -107,19 +107,11 @@ function drawStation(it, ductY, ductH, laneFlip){
       const fScaleS = n > 1 ? 0.73 : 1;
       const fanOffS = n > 1 ? 12 : 0;
       for(let i=0;i<n;i++){ const row = i % 2; const col = Math.floor(i/2); const fx = n===1? cx : (it.x+22+col*28); const fy = n===1? ductY : (ductY - fanOffS + row*fanOffS*2); html += '<g id="fanicon_supply_'+i+'" transform="translate('+fx+','+fy+') scale('+fScaleS+')">'+fanSupplyGfx('off')+'</g>'; }
-      if(config.driveType==='vfd'){
-        if(config.singleDrive || n===1){ html += '<g id="vfdIcon_supply" transform="translate('+(it.x+it.w+20)+','+outward(6)+') scale(0.8)">'+gfxWrap('vfd','','1','supply')+'</g>'; }
-        else { for(let i=0;i<n;i++){ const col = Math.floor(i/2); const fx = it.x+22+col*28; html += '<g id="vfdIcon_supply_'+i+'" transform="translate('+(fx-10)+','+(ductY-45)+') scale(0.6)">'+gfxWrap('vfd','','1','supply_'+i)+'</g>'; } }
-      }
     } else if(it.id==='hotdeckfan'){
       const n = config.supplyFan==='wall'? config.supplyFanCount:1;
       const fScaleH = n > 1 ? 0.73 : 1;
       const fanOffH = n > 1 ? 12 : 0;
       for(let i=0;i<n;i++){ const row = i % 2; const col = Math.floor(i/2); const fx = n===1? cx : (it.x+22+col*28); const fy = n===1? ductY : (ductY - fanOffH + row*fanOffH*2); html += '<g id="fanicon_hotdeck_'+i+'" transform="translate('+fx+','+fy+') scale('+fScaleH+')">'+fanSupplyGfx('off')+'</g>'; }
-      if(config.driveType==='vfd'){
-        if(config.singleDrive || n===1){ html += '<g id="vfdIcon_hotdeck" transform="translate('+(it.x+it.w+20)+','+outward(6)+') scale(0.8)">'+gfxWrap('vfd','','1','hotdeckfan')+'</g>'; }
-        else { for(let i=0;i<n;i++){ const col = Math.floor(i/2); const fx = it.x+22+col*28; html += '<g id="vfdIcon_hotdeck_'+i+'" transform="translate('+(fx-10)+','+(ductY-45)+') scale(0.6)">'+gfxWrap('vfd','','1','hotdeck_'+i)+'</g>'; } }
-      }
     }
     html += stationLabel(cx, labelY, shortDuctLabel(it.title));
   } else if(it.kind==='humid'){
@@ -426,10 +418,6 @@ function buildSchematicCore(){
         const rfS1 = returnFanCount > 1 ? 0.73 : 1;
         const rfOff1 = returnFanCount > 1 ? 12 : 0;
         for(let i=0;i<returnFanCount;i++){ const row = i % 2; const col = Math.floor(i/2); const fx = returnFanCount===1? fanCenter : (Math.max(riserX,hRiserX)+90+col*28); const fy = returnFanCount===1? ry : (ry - rfOff1 + row*rfOff1*2); s += '<g id="fanicon_return_'+i+'" transform="translate('+fx+','+fy+') scale('+rfS1+')">'+fanReturnGfx('off', null, true)+'</g>'; }
-        if(config.driveType==='vfd'){
-          if(config.singleDrive || returnFanCount===1){ s += '<g id="vfdIcon_return" transform="translate('+(fanCenter+34)+','+(ry-20)+') scale(0.8)">'+gfxWrap('vfd','','1','return')+'</g>'; }
-          else { for(let i=0;i<returnFanCount;i++){ const col = Math.floor(i/2); const fx = Math.max(riserX,hRiserX)+90+col*28; s += '<g id="vfdIcon_return_'+i+'" transform="translate('+(fx-10)+','+(ry-45)+') scale(0.6)">'+gfxWrap('vfd','','1','return_'+i)+'</g>'; } }
-        }
         s += '<g id="readout_returnfan"></g>';
       }
       returnFanCx = fanCenter; returnY = ry;
@@ -472,10 +460,6 @@ function buildSchematicCore(){
         const rfS2 = returnFanCount > 1 ? 0.73 : 1;
         const rfOff2 = returnFanCount > 1 ? 12 : 0;
         for(let i=0;i<returnFanCount;i++){ const row = i % 2; const col = Math.floor(i/2); const fx = returnFanCount===1? fanCenter : (riserX+90+col*28); const fy = returnFanCount===1? ry : (ry - rfOff2 + row*rfOff2*2); s += '<g id="fanicon_return_'+i+'" transform="translate('+fx+','+fy+') scale('+rfS2+')">'+fanReturnGfx('off', null, true)+'</g>'; }
-        if(config.driveType==='vfd'){
-          if(config.singleDrive || returnFanCount===1){ s += '<g id="vfdIcon_return" transform="translate('+(fanCenter+34)+','+(ry-20)+') scale(0.8)">'+gfxWrap('vfd','','1','return')+'</g>'; }
-          else { for(let i=0;i<returnFanCount;i++){ const col = Math.floor(i/2); const fx = riserX+90+col*28; s += '<g id="vfdIcon_return_'+i+'" transform="translate('+(fx-10)+','+(ry-45)+') scale(0.6)">'+gfxWrap('vfd','','1','return_'+i)+'</g>'; } }
-        }
         s += '<g id="readout_returnfan"></g>';
       }
       returnFanCx = fanCenter; returnY = ry;
@@ -594,7 +578,7 @@ function updateSchematicReadouts(){
         lines = null;
       }
       else if(it.id==='hotFilter') lines=['FILTER', activeFaults.hotDeckDirtyFilter? 'DIRTY':'CLEAN'];
-      else if(it.id==='hotdeckfan') lines=['HDF '+fmt(sim.hotDeckFanPct,0)+'%', fmt(sim.hotDeckCfm,0)+' CFM'];
+      else if(it.id==='hotdeckfan'){ lines=['HDF '+fmt(sim.hotDeckFanPct,0)+'%', fmt(sim.hotDeckCfm,0)+' CFM']; if(config.driveType==='vfd') accent = 'vfd_'+roundTo10(sim.hotDeckFanPct); }
       else if(it.id==='hotdischarge'){ const spFluct = 1 + 0.1 * Math.sin((sim.age||0) * 0.07) * Math.sin((sim.age||0) * 0.13); const driveFrac = config.driveType==='vfd' ? (sim.supplyFanPct/100) : (sim.supplyDamperPos/100); lines=['HD-SAT '+fmt(sim.hotDeckTemp,1)+'\u00b0F', 'HD-RH '+fmt(rhFromW(sim.hotDeckTemp, sim.W_supply)*100,0)+'%', fmt(sim.hotDeckCfm,0)+' CFM', 'SP '+fmt(driveFrac * sp.highStaticSP * 0.9 * spFluct, 2)+'"']; }
       if(lines){
         let iconHtml = null;
@@ -641,16 +625,7 @@ function updateSchematicReadouts(){
   else if(config.reheat){ const rhEl = document.getElementById('coilIcon_reheat'); setHtmlCached(rhEl, heatingCoilGfx(sim.reheatValve, activeFaults.reheatValveStuck!==undefined || activeFaults.reheatNoFlow, 'reheat')); }
   if(config.ductType!=='dual' && config.steamHumid){ const humEl = document.getElementById('humidIcon'); setHtmlCached(humEl, humidifierGfx(sim.humidValve>2, activeFaults.humidValveStuck!==undefined || activeFaults.humidNoSteam)); }
 
-  if(config.driveType==='vfd'){
-    const isSingle = config.singleDrive || sim.supplyFans.length <= 1;
-    if(isSingle){ const vfdS = document.getElementById('vfdIcon_supply'); if(vfdS){ const failed = sim.supplyFans.some(f=>f.fail); const running = sim.supplyFanPct > 0; setHtmlCached(vfdS, gfxWrap('vfd', (running?'active':'')+(failed?' in-alarm':'')+' value-'+roundTo10(sim.supplyFanPct), 1, 'supply')); } }
-    else { sim.supplyFans.forEach((f,i)=>{ const vfdEl = document.getElementById('vfdIcon_supply_'+i); if(vfdEl){ const running = f.run && sim.supplyFanPct > 0; setHtmlCached(vfdEl, gfxWrap('vfd', (running?'active':'')+(f.fail?' in-alarm':'')+' value-'+roundTo10(sim.supplyFanPct), 1, 'supply_'+i)); } }); }
-  }
-  if(config.driveType==='vfd' && config.airSystem==='return'){
-    const isSingle = config.singleDrive || sim.returnFans.length <= 1;
-    if(isSingle){ const vfdR = document.getElementById('vfdIcon_return'); if(vfdR){ const failed = sim.returnFans.some(f=>f.fail); const running = sim.returnFanPct > 0; setHtmlCached(vfdR, gfxWrap('vfd', (running?'active':'')+(failed?' in-alarm':'')+' value-'+roundTo10(sim.returnFanPct), 1, 'return')); } }
-    else { sim.returnFans.forEach((f,i)=>{ const vfdEl = document.getElementById('vfdIcon_return_'+i); if(vfdEl){ const running = f.run && sim.returnFanPct > 0; setHtmlCached(vfdEl, gfxWrap('vfd', (running?'active':'')+(f.fail?' in-alarm':'')+' value-'+roundTo10(sim.returnFanPct), 1, 'return_'+i)); } }); }
-  }
+
 
   if(sim.supplyFans.length){ sim.supplyFans.forEach((f,i)=>{ const el=document.getElementById('fanicon_supply_'+i); setHtmlCached(el, fanSupplyGfx(f.fail?'fail':(f.run?'run':'off'))); }); }
   else { const el=document.getElementById('fanicon_supply_0'); setHtmlCached(el, fanSupplyGfx(sim.supplyFanPct>0?'run':'off')); }
@@ -660,11 +635,7 @@ function updateSchematicReadouts(){
     const raHotEl = document.getElementById('raDamperIcon_hotMixbox'); setHtmlCached(raHotEl, damperGfx(config.airSystem==='return'? sim.hotRaDamperPos:0, false));
     const hotFilterEl = document.getElementById('filterIcon_hotFilter'); setHtmlCached(hotFilterEl, filterGfx(!!activeFaults.hotDeckDirtyFilter));
     const hotLowLimitEl = document.getElementById('lowLimitIcon_hotFilter'); if(hotLowLimitEl) hotLowLimitEl.innerHTML = '<rect x="-14" y="-8" width="28" height="16" rx="3" fill="'+(latched.hotFreezestat?'#e74c3c':'var(--panel-inset)')+'" stroke="var(--line)" stroke-width="1" class="'+(latched.hotFreezestat?'safety-blink':'')+'"/><text x="0" y="3" class="safetext'+(latched.hotFreezestat?' tripped':'')+'" fill="'+(latched.hotFreezestat?'#fff':'var(--text-dim)')+'">FRZ</text>';
-    if(config.driveType==='vfd'){
-      const isSingle = config.singleDrive || sim.hotDeckFans.length <= 1;
-      if(isSingle){ const vfdHotEl = document.getElementById('vfdIcon_hotdeck'); if(vfdHotEl){ const failed = sim.hotDeckFans.some(f=>f.fail); const running = sim.hotDeckFanPct > 0; setHtmlCached(vfdHotEl, gfxWrap('vfd', (running?'active':'')+(failed?' in-alarm':'')+' value-'+roundTo10(sim.hotDeckFanPct), 1, 'hotdeckfan')); } }
-      else { sim.hotDeckFans.forEach((f,i)=>{ const vfdEl = document.getElementById('vfdIcon_hotdeck_'+i); if(vfdEl){ const running = f.run && sim.hotDeckFanPct > 0; setHtmlCached(vfdEl, gfxWrap('vfd', (running?'active':'')+(f.fail?' in-alarm':'')+' value-'+roundTo10(sim.hotDeckFanPct), 1, 'hotdeck_'+i)); } }); }
-    }
+
     if(sim.hotDeckFans.length){ sim.hotDeckFans.forEach((f,i)=>{ const el=document.getElementById('fanicon_hotdeck_'+i); setHtmlCached(el, fanSupplyGfx(f.fail?'fail':(f.run?'run':'off'))); }); }
     else { const el=document.getElementById('fanicon_hotdeck_0'); setHtmlCached(el, fanSupplyGfx(sim.hotDeckFanPct>0?'run':'off')); }
   }
@@ -674,7 +645,7 @@ function updateSchematicReadouts(){
       if(sim.returnFans.length){ sim.returnFans.forEach((f,i)=>{ const el=document.getElementById('fanicon_return_'+i); setHtmlCached(el, fanReturnGfx(f.fail?'fail':(f.run?'run':'off'), null, true)); }); }
       else { const el=document.getElementById('fanicon_return_0'); setHtmlCached(el, fanReturnGfx(sim.returnFanPct>0?'run':'off', null, true)); }
       const rg = document.getElementById('readout_returnfan');
-      if(rg && window._schemReturnFanCx!==null){ rg.innerHTML = bubble(window._schemReturnFanCx, window._schemReturnY-22, 30, pn('Return Air','RA')+' Fan', ['RF '+fmt(sim.returnFanPct,0)+'%', fmt(sim.returnCfm,0)+' CFM'], null); }
+      if(rg && window._schemReturnFanCx!==null){ const rvfd = config.driveType==='vfd' ? gfxWrap('vfd', 'value-'+roundTo10(sim.returnFanPct), 1, 'return_vfd') : null; rg.innerHTML = bubble(window._schemReturnFanCx, window._schemReturnY-22, 30, pn('Return Air','RA')+' Fan', ['RF '+fmt(sim.returnFanPct,0)+'%', fmt(sim.returnCfm,0)+' CFM'], null, 0, rvfd); }
     }
     const raSensorEl = document.getElementById('readout_raSensor');
     if(raSensorEl && window._schemRaSensorX!==undefined){
