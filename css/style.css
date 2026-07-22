@@ -324,7 +324,7 @@ details.panel-collapsible[open] summary{margin-bottom:14px;}
 .terminal.wire-disconnected{background:var(--panel-inset);}
 .term-wire{display:block;margin:0 auto;}
 
-.helpbox{font-size:11.5px;color:var(--text-faint);line-height:1.5;background:var(--panel-inset);
+.helpbox{font-size:11.5px;color:var(--text-dim);line-height:1.5;background:var(--panel-inset);
   border:1px dashed var(--line);border-radius:5px;padding:10px 12px;}
 
 .savebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
