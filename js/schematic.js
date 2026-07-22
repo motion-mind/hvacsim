@@ -205,7 +205,6 @@ function buildSchematicCore(){
   if(config.preheat) add('coil', 80, 'preheat', 'Preheat Coil'+coldSuffix);
   const fanBaseName = showSecondRow ? (sharedDual ? 'Supply Fan' : 'Cold Deck Fan') : (config.supplyFan==='wall' ? 'Supply Fan Wall' : 'Supply Fan');
   add('fan', config.supplyFan==='wall'? (26*config.supplyFanCount+20) : 66, 'supplyfan', showSecondRow ? (config.supplyFan==='wall'?(sharedDual?'Supply Fan Wall':'Cold Deck Fan Wall'):fanBaseName) : fanBaseName);
-  if(config.driveType==='starter') add('supplydamper', 54, 'supplydamper', 'Supply Duct Damper');
   const forkX = x;
   const taperW = 50;
   if(sharedDual){ x = forkX + taperW; currentAddY = coldLaneY; }
@@ -218,6 +217,7 @@ function buildSchematicCore(){
     if(config.steamHumid) add('humid', 54, 'humid', 'Steam Humidifier');
     add('supplydamper', 50, 'coldDamper', 'Cold Deck Damper');
   } else {
+    if(config.driveType==='starter') add('supplydamper', 54, 'supplydamper', 'Supply Duct Damper');
     if(config.reheat) add('coil', 80, 'reheat', 'Reheat Coil');
     if(config.steamHumid) add('humid', 54, 'humid', 'Steam Humidifier');
   }
