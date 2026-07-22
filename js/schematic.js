@@ -1,6 +1,12 @@
 /* ============================================================
    SCHEMATIC — buildSchematicCore, drawStation, updateSchematicReadouts
    ============================================================ */
+function setHtmlCached(el, html){
+  if(!el) return;
+  if(el.dataset.html === html) return;
+  el.dataset.html = html;
+  el.innerHTML = html;
+}
 function collectGfxCss(names){
   const seen = {}; let css='';
   names.forEach(n=>{ if(!seen[n] && GFX[n]){ seen[n]=true; css+=GFX[n].css+'\n'; } });
@@ -600,59 +606,59 @@ function updateSchematicReadouts(){
     window._schemHotItems.forEach((it,i)=>bubbleFor(it, i, window._schemHotItems.length, hotFlip));
   }
 
-  const fltrEl = document.getElementById('filterIcon_filter'); if(fltrEl) fltrEl.innerHTML = filterGfx(!!activeFaults.dirtyFilter);
-  const oaEl = document.getElementById('oaDamperIcon_mixbox'); if(oaEl) oaEl.innerHTML = damperGfx(config.airSystem==='return'? sim.oaDamperPos:0, activeFaults.oaDamperStuck!==undefined);
-  const raEl = document.getElementById('raDamperIcon_mixbox'); if(raEl) raEl.innerHTML = damperGfx(config.airSystem==='return'? sim.raDamperPos:0, false);
-  const sde = document.getElementById('supplyDamperIcon_supplydamper'); if(sde) sde.innerHTML = damperGfx(sim.supplyDamperPos, activeFaults.supplyDamperStuck!==undefined);
-  const cde = document.getElementById('supplyDamperIcon_coldDamper'); if(cde) cde.innerHTML = damperGfx(sim.coldDeckDamperPos, activeFaults.coldDeckDamperStuck!==undefined);
-  const hde = document.getElementById('supplyDamperIcon_hotDamper'); if(hde) hde.innerHTML = damperGfx(sim.hotDeckDamperPos, activeFaults.hotDeckDamperStuck!==undefined);
+  const fltrEl = document.getElementById('filterIcon_filter'); setHtmlCached(fltrEl, filterGfx(!!activeFaults.dirtyFilter));
+  const oaEl = document.getElementById('oaDamperIcon_mixbox'); setHtmlCached(oaEl, damperGfx(config.airSystem==='return'? sim.oaDamperPos:0, activeFaults.oaDamperStuck!==undefined));
+  const raEl = document.getElementById('raDamperIcon_mixbox'); setHtmlCached(raEl, damperGfx(config.airSystem==='return'? sim.raDamperPos:0, false));
+  const sde = document.getElementById('supplyDamperIcon_supplydamper'); setHtmlCached(sde, damperGfx(sim.supplyDamperPos, activeFaults.supplyDamperStuck!==undefined));
+  const cde = document.getElementById('supplyDamperIcon_coldDamper'); setHtmlCached(cde, damperGfx(sim.coldDeckDamperPos, activeFaults.coldDeckDamperStuck!==undefined));
+  const hde = document.getElementById('supplyDamperIcon_hotDamper'); setHtmlCached(hde, damperGfx(sim.hotDeckDamperPos, activeFaults.hotDeckDamperStuck!==undefined));
   const llim = document.getElementById('lowLimitIcon_preheat'); if(llim) llim.innerHTML = '<rect x="-14" y="-8" width="28" height="16" rx="3" fill="'+(latched.freezestat?'#e74c3c':'var(--panel-inset)')+'" stroke="var(--line)" stroke-width="1" class="'+(latched.freezestat?'safety-blink':'')+'"/><text x="0" y="3" class="safetext'+(latched.freezestat?' tripped':'')+'" fill="'+(latched.freezestat?'#fff':'var(--text-dim)')+'">FRZ</text>';
-  const bp = document.getElementById('boosterPumpIcon'); if(bp) bp.innerHTML = pumpGfx(activeFaults.boosterPumpFail? 'fail' : (sim.boosterPumpRun?'run':'off'));
+  const bp = document.getElementById('boosterPumpIcon'); setHtmlCached(bp, pumpGfx(activeFaults.boosterPumpFail? 'fail' : (sim.boosterPumpRun?'run':'off')));
   const aq = document.getElementById('aquastatIcon'); if(aq) aq.innerHTML = lowLimitGfx(latched.aquastat);
 
-  if(config.preheat){ const el = document.getElementById('coilIcon_preheat'); if(el) el.innerHTML = heatingCoilGfx(sim.preheatValve, activeFaults.preheatValveStuck!==undefined || activeFaults.preheatNoFlow, 'preheat'); }
+  if(config.preheat){ const el = document.getElementById('coilIcon_preheat'); setHtmlCached(el, heatingCoilGfx(sim.preheatValve, activeFaults.preheatValveStuck!==undefined || activeFaults.preheatNoFlow, 'preheat')); }
   const coolEl = document.getElementById('coilIcon_cooling');
-  if(coolEl) coolEl.innerHTML = coolingCoilGfx(sim.coil1Valve, activeFaults.coil1ValveStuck!==undefined || activeFaults.coil1NoFlow);
+  setHtmlCached(coolEl, coolingCoilGfx(sim.coil1Valve, activeFaults.coil1ValveStuck!==undefined || activeFaults.coil1NoFlow));
   const coil1El = document.getElementById('coilIcon_coil1');
-  if(coil1El) coil1El.innerHTML = coolingCoilGfx(sim.coil1Valve, activeFaults.coil1ValveStuck!==undefined || activeFaults.coil1NoFlow);
+  setHtmlCached(coil1El, coolingCoilGfx(sim.coil1Valve, activeFaults.coil1ValveStuck!==undefined || activeFaults.coil1NoFlow));
   const coil2El = document.getElementById('coilIcon_coil2');
-  if(coil2El) coil2El.innerHTML = coolingCoilGfx(sim.coil2Valve, activeFaults.coil2ValveStuck!==undefined || activeFaults.coil2NoFlow);
-  if(config.ductType==='dual'){ const hdEl = document.getElementById('coilIcon_hotdeck'); if(hdEl) hdEl.innerHTML = heatingCoilGfx(sim.hotDeckValve, activeFaults.hotDeckValveStuck!==undefined, 'hotdeck'); }
-  else if(config.reheat){ const rhEl = document.getElementById('coilIcon_reheat'); if(rhEl) rhEl.innerHTML = heatingCoilGfx(sim.reheatValve, activeFaults.reheatValveStuck!==undefined || activeFaults.reheatNoFlow, 'reheat'); }
-  if(config.ductType!=='dual' && config.steamHumid){ const humEl = document.getElementById('humidIcon'); if(humEl) humEl.innerHTML = humidifierGfx(sim.humidValve>2, activeFaults.humidValveStuck!==undefined || activeFaults.humidNoSteam); }
+  setHtmlCached(coil2El, coolingCoilGfx(sim.coil2Valve, activeFaults.coil2ValveStuck!==undefined || activeFaults.coil2NoFlow));
+  if(config.ductType==='dual'){ const hdEl = document.getElementById('coilIcon_hotdeck'); setHtmlCached(hdEl, heatingCoilGfx(sim.hotDeckValve, activeFaults.hotDeckValveStuck!==undefined, 'hotdeck')); }
+  else if(config.reheat){ const rhEl = document.getElementById('coilIcon_reheat'); setHtmlCached(rhEl, heatingCoilGfx(sim.reheatValve, activeFaults.reheatValveStuck!==undefined || activeFaults.reheatNoFlow, 'reheat')); }
+  if(config.ductType!=='dual' && config.steamHumid){ const humEl = document.getElementById('humidIcon'); setHtmlCached(humEl, humidifierGfx(sim.humidValve>2, activeFaults.humidValveStuck!==undefined || activeFaults.humidNoSteam)); }
 
   if(config.driveType==='vfd'){
     const isSingle = config.singleDrive || sim.supplyFans.length <= 1;
-    if(isSingle){ const vfdS = document.getElementById('vfdIcon_supply'); if(vfdS){ const failed = sim.supplyFans.some(f=>f.fail); const running = sim.supplyFanPct > 0; vfdS.innerHTML = gfxWrap('vfd', (running?'active':'')+(failed?' in-alarm':'')+' value-'+roundTo10(sim.supplyFanPct), 1, 'supply'); } }
-    else { sim.supplyFans.forEach((f,i)=>{ const vfdEl = document.getElementById('vfdIcon_supply_'+i); if(vfdEl){ const running = f.run && sim.supplyFanPct > 0; vfdEl.innerHTML = gfxWrap('vfd', (running?'active':'')+(f.fail?' in-alarm':'')+' value-'+roundTo10(sim.supplyFanPct), 1, 'supply_'+i); } }); }
+    if(isSingle){ const vfdS = document.getElementById('vfdIcon_supply'); if(vfdS){ const failed = sim.supplyFans.some(f=>f.fail); const running = sim.supplyFanPct > 0; setHtmlCached(vfdS, gfxWrap('vfd', (running?'active':'')+(failed?' in-alarm':'')+' value-'+roundTo10(sim.supplyFanPct), 1, 'supply')); } }
+    else { sim.supplyFans.forEach((f,i)=>{ const vfdEl = document.getElementById('vfdIcon_supply_'+i); if(vfdEl){ const running = f.run && sim.supplyFanPct > 0; setHtmlCached(vfdEl, gfxWrap('vfd', (running?'active':'')+(f.fail?' in-alarm':'')+' value-'+roundTo10(sim.supplyFanPct), 1, 'supply_'+i)); } }); }
   }
   if(config.driveType==='vfd' && config.airSystem==='return'){
     const isSingle = config.singleDrive || sim.returnFans.length <= 1;
-    if(isSingle){ const vfdR = document.getElementById('vfdIcon_return'); if(vfdR){ const failed = sim.returnFans.some(f=>f.fail); const running = sim.returnFanPct > 0; vfdR.innerHTML = gfxWrap('vfd', (running?'active':'')+(failed?' in-alarm':'')+' value-'+roundTo10(sim.returnFanPct), 1, 'return'); } }
-    else { sim.returnFans.forEach((f,i)=>{ const vfdEl = document.getElementById('vfdIcon_return_'+i); if(vfdEl){ const running = f.run && sim.returnFanPct > 0; vfdEl.innerHTML = gfxWrap('vfd', (running?'active':'')+(f.fail?' in-alarm':'')+' value-'+roundTo10(sim.returnFanPct), 1, 'return_'+i); } }); }
+    if(isSingle){ const vfdR = document.getElementById('vfdIcon_return'); if(vfdR){ const failed = sim.returnFans.some(f=>f.fail); const running = sim.returnFanPct > 0; setHtmlCached(vfdR, gfxWrap('vfd', (running?'active':'')+(failed?' in-alarm':'')+' value-'+roundTo10(sim.returnFanPct), 1, 'return')); } }
+    else { sim.returnFans.forEach((f,i)=>{ const vfdEl = document.getElementById('vfdIcon_return_'+i); if(vfdEl){ const running = f.run && sim.returnFanPct > 0; setHtmlCached(vfdEl, gfxWrap('vfd', (running?'active':'')+(f.fail?' in-alarm':'')+' value-'+roundTo10(sim.returnFanPct), 1, 'return_'+i)); } }); }
   }
 
-  if(sim.supplyFans.length){ sim.supplyFans.forEach((f,i)=>{ const el=document.getElementById('fanicon_supply_'+i); if(el) el.innerHTML=fanSupplyGfx(f.fail?'fail':(f.run?'run':'off')); }); }
-  else { const el=document.getElementById('fanicon_supply_0'); if(el) el.innerHTML=fanSupplyGfx(sim.supplyFanPct>0?'run':'off'); }
+  if(sim.supplyFans.length){ sim.supplyFans.forEach((f,i)=>{ const el=document.getElementById('fanicon_supply_'+i); setHtmlCached(el, fanSupplyGfx(f.fail?'fail':(f.run?'run':'off'))); }); }
+  else { const el=document.getElementById('fanicon_supply_0'); setHtmlCached(el, fanSupplyGfx(sim.supplyFanPct>0?'run':'off')); }
 
   if(independent){
-    const oaHotEl = document.getElementById('oaDamperIcon_hotMixbox'); if(oaHotEl) oaHotEl.innerHTML = damperGfx(config.airSystem==='return'? sim.hotOaDamperPos:0, activeFaults.hotOaDamperStuck!==undefined);
-    const raHotEl = document.getElementById('raDamperIcon_hotMixbox'); if(raHotEl) raHotEl.innerHTML = damperGfx(config.airSystem==='return'? sim.hotRaDamperPos:0, false);
-    const hotFilterEl = document.getElementById('filterIcon_hotFilter'); if(hotFilterEl) hotFilterEl.innerHTML = filterGfx(!!activeFaults.hotDeckDirtyFilter);
+    const oaHotEl = document.getElementById('oaDamperIcon_hotMixbox'); setHtmlCached(oaHotEl, damperGfx(config.airSystem==='return'? sim.hotOaDamperPos:0, activeFaults.hotOaDamperStuck!==undefined));
+    const raHotEl = document.getElementById('raDamperIcon_hotMixbox'); setHtmlCached(raHotEl, damperGfx(config.airSystem==='return'? sim.hotRaDamperPos:0, false));
+    const hotFilterEl = document.getElementById('filterIcon_hotFilter'); setHtmlCached(hotFilterEl, filterGfx(!!activeFaults.hotDeckDirtyFilter));
     const hotLowLimitEl = document.getElementById('lowLimitIcon_hotFilter'); if(hotLowLimitEl) hotLowLimitEl.innerHTML = '<rect x="-14" y="-8" width="28" height="16" rx="3" fill="'+(latched.hotFreezestat?'#e74c3c':'var(--panel-inset)')+'" stroke="var(--line)" stroke-width="1" class="'+(latched.hotFreezestat?'safety-blink':'')+'"/><text x="0" y="3" class="safetext'+(latched.hotFreezestat?' tripped':'')+'" fill="'+(latched.hotFreezestat?'#fff':'var(--text-dim)')+'">FRZ</text>';
     if(config.driveType==='vfd'){
       const isSingle = config.singleDrive || sim.hotDeckFans.length <= 1;
-      if(isSingle){ const vfdHotEl = document.getElementById('vfdIcon_hotdeck'); if(vfdHotEl){ const failed = sim.hotDeckFans.some(f=>f.fail); const running = sim.hotDeckFanPct > 0; vfdHotEl.innerHTML = gfxWrap('vfd', (running?'active':'')+(failed?' in-alarm':'')+' value-'+roundTo10(sim.hotDeckFanPct), 1, 'hotdeckfan'); } }
-      else { sim.hotDeckFans.forEach((f,i)=>{ const vfdEl = document.getElementById('vfdIcon_hotdeck_'+i); if(vfdEl){ const running = f.run && sim.hotDeckFanPct > 0; vfdEl.innerHTML = gfxWrap('vfd', (running?'active':'')+(f.fail?' in-alarm':'')+' value-'+roundTo10(sim.hotDeckFanPct), 1, 'hotdeck_'+i); } }); }
+      if(isSingle){ const vfdHotEl = document.getElementById('vfdIcon_hotdeck'); if(vfdHotEl){ const failed = sim.hotDeckFans.some(f=>f.fail); const running = sim.hotDeckFanPct > 0; setHtmlCached(vfdHotEl, gfxWrap('vfd', (running?'active':'')+(failed?' in-alarm':'')+' value-'+roundTo10(sim.hotDeckFanPct), 1, 'hotdeckfan')); } }
+      else { sim.hotDeckFans.forEach((f,i)=>{ const vfdEl = document.getElementById('vfdIcon_hotdeck_'+i); if(vfdEl){ const running = f.run && sim.hotDeckFanPct > 0; setHtmlCached(vfdEl, gfxWrap('vfd', (running?'active':'')+(f.fail?' in-alarm':'')+' value-'+roundTo10(sim.hotDeckFanPct), 1, 'hotdeck_'+i)); } }); }
     }
-    if(sim.hotDeckFans.length){ sim.hotDeckFans.forEach((f,i)=>{ const el=document.getElementById('fanicon_hotdeck_'+i); if(el) el.innerHTML=fanSupplyGfx(f.fail?'fail':(f.run?'run':'off')); }); }
-    else { const el=document.getElementById('fanicon_hotdeck_0'); if(el) el.innerHTML=fanSupplyGfx(sim.hotDeckFanPct>0?'run':'off'); }
+    if(sim.hotDeckFans.length){ sim.hotDeckFans.forEach((f,i)=>{ const el=document.getElementById('fanicon_hotdeck_'+i); setHtmlCached(el, fanSupplyGfx(f.fail?'fail':(f.run?'run':'off'))); }); }
+    else { const el=document.getElementById('fanicon_hotdeck_0'); setHtmlCached(el, fanSupplyGfx(sim.hotDeckFanPct>0?'run':'off')); }
   }
 
   if(config.airSystem==='return'){
     if(config.returnFanCount > 0){
-      if(sim.returnFans.length){ sim.returnFans.forEach((f,i)=>{ const el=document.getElementById('fanicon_return_'+i); if(el) el.innerHTML=fanReturnGfx(f.fail?'fail':(f.run?'run':'off'), null, true); }); }
-      else { const el=document.getElementById('fanicon_return_0'); if(el) el.innerHTML=fanReturnGfx(sim.returnFanPct>0?'run':'off', null, true); }
+      if(sim.returnFans.length){ sim.returnFans.forEach((f,i)=>{ const el=document.getElementById('fanicon_return_'+i); setHtmlCached(el, fanReturnGfx(f.fail?'fail':(f.run?'run':'off'), null, true)); }); }
+      else { const el=document.getElementById('fanicon_return_0'); setHtmlCached(el, fanReturnGfx(sim.returnFanPct>0?'run':'off', null, true)); }
       const rg = document.getElementById('readout_returnfan');
       if(rg && window._schemReturnFanCx!==null){ rg.innerHTML = bubble(window._schemReturnFanCx, window._schemReturnY-22, 30, pn('Return Air','RA')+' Fan', ['RF '+fmt(sim.returnFanPct,0)+'%', fmt(sim.returnCfm,0)+' CFM'], null); }
     }
