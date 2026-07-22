@@ -143,64 +143,7 @@
       </div>
     </div>
     <div class="schematic-wrap" id="schemContainer"><svg id="schematicSvg" viewBox="0 0 1400 380"></svg></div>
-    <div class="btnrow" style="margin-top:14px;margin-bottom:10px;align-items:center;gap:16px;flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <label style="font-family:var(--mono);font-size:12px;color:var(--text-faint);margin:0;">Layout Template:</label>
-        <select id="layoutTemplateSelect" style="min-width:180px;"><option value="">— Default Layout —</option></select>
-        <button class="btn" id="btnRefreshLayoutTemplates" title="Refresh list">&#8635;</button>
-      </div>
-      <div style="width:1px;height:18px;background:var(--line);align-self:center;"></div>
-      <div class="toggle-wrap">
-        <div class="toggle" id="editLayoutToggle"><div class="knob"></div></div>
-        <span style="font-family:var(--mono);font-size:12px;">Edit Layout</span>
-      </div>
-      <span id="layoutEditControls" style="display:none;gap:8px;flex-wrap:wrap;align-items:center;" class="btnrow">
-        <input type="text" id="layoutTemplateName" placeholder="Template name" style="width:150px;">
-        <button class="btn" id="btnSaveLayoutTemplate">Save As Template</button>
-        <button class="btn" id="btnDeleteLayoutTemplate">Delete Selected</button>
-        <button class="btn danger" id="btnResetLayout">Reset Positions</button>
-        <button class="btn" id="btnExportLayout">Export Layout</button>
-        <button class="btn" id="btnImportLayout">Import Layout</button>
-        <input type="file" id="importLayoutFile" accept="application/json" style="display:none;">
-      </span>
-    </div>
-    <div id="addElementRow" style="display:none;margin-bottom:10px;" class="btnrow">
-      <select id="addElementType" style="min-width:190px;">
-        <optgroup label="Sensors">
-          <option value="sensorTemp">Temperature Sensor</option>
-          <option value="sensorHumidity">Humidity Sensor</option>
-          <option value="sensorPressure">Pressure Sensor</option>
-          <option value="sensorStaticPressure">Static Pressure Sensor</option>
-          <option value="sensorFlow">Flow Sensor</option>
-        </optgroup>
-        <optgroup label="Valves">
-          <option value="gateValve">Gate Valve</option>
-          <option value="ballValve">Ball Valve</option>
-          <option value="butterflyValve">Butterfly Valve</option>
-        </optgroup>
-        <optgroup label="Status">
-          <option value="alarmStatus">Alarm</option>
-          <option value="faultStatus">Fault</option>
-          <option value="manualOverride">Manual Override</option>
-          <option value="outOfService">Out of Service</option>
-        </optgroup>
-        <optgroup label="Other">
-          <option value="thermalWheel">Energy Recovery Wheel</option>
-          <option value="ductSection">Ductwork Section</option>
-        </optgroup>
-      </select>
-      <button class="btn" id="btnAddElement">+ Add to Diagram</button>
-      <small class="hint">Double-click an added element to remove it.</small>
-    </div>
-    <div id="exportLayoutBox" style="display:none;margin-bottom:10px;">
-      <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-bottom:4px;">Copy this and paste it in chat (or download it and attach the file) to show exactly where you want things — includes every dragged element's id and pixel offset from its default position.</div>
-      <textarea id="exportLayoutText" readonly style="width:100%;height:130px;font-family:var(--mono);font-size:11px;box-sizing:border-box;"></textarea>
-      <div class="btnrow" style="margin-top:6px;">
-        <button class="btn" id="btnCopyExportLayout">Copy to Clipboard</button>
-        <button class="btn" id="btnDownloadExportLayout">Download as File</button>
-      </div>
-    </div>
-    <small class="hint" id="layoutEditHint" style="display:none;margin-bottom:8px;">Drag any icon or info box to reposition it, or add new elements from the library below. Nothing is saved until you click "Save As Template" — reloading or reconfiguring without saving discards the changes.</small>
+
   </div>
 
   <div class="panel">
