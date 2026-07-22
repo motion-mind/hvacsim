@@ -12,7 +12,7 @@
   <div class="brand">
     <div class="mark">AHU</div>
     <div>
-      <h1>Air Handling Unit &mdash; Training Simulator <span id="versionTag">V1.8</span></h1>
+      <h1>Air Handling Unit Training Simulator <span id="versionTag">V1.8</span></h1>
       <div class="sub" id="unitSubtitle">UNCONFIGURED &middot; go to Setup</div>
     </div>
   </div>
@@ -256,7 +256,7 @@
         </div>
       <div>
         <h3 style="font-size:11px;color:var(--text-dim);font-family:var(--mono);text-transform:uppercase;margin:0 0 8px;">Active</h3>
-        <div class="fault-active-list" id="activeFaultList"><span style="color:var(--text-faint);font-size:12px;">No active faults &mdash; system nominal.</span></div>
+        <div class="fault-active-list" id="activeFaultList"><span style="color:var(--text-faint);font-size:12px;">No active faults - system nominal.</span></div>
         <details class="reveal" id="revealBox" style="display:none;">
           <summary>Reveal diagnosis (instructor / answer key)</summary>
           <div class="reveal-body" id="revealBody"></div>
@@ -269,9 +269,9 @@
 <!-- ================= CONTROL PANEL TAB ================= -->
 <div class="tabpanel" id="tab-panel">
   <div class="panel">
-    <h2>Field Control Panel &mdash; Terminal Strips</h2>
+    <h2>Field Control Panel - Terminal Strips</h2>
     <div class="helpbox">
-      Select a meter function on the left. Testing the wrong function against a live circuit can damage the meter &mdash; just like in the field. Left click a terminal to attach the <b style="background:var(--red);color:#fff;padding:0 4px;border-radius:2px;font-size:11px;">red</b> probe, left click another to attach the <b style="background:var(--text);color:var(--bg);padding:0 4px;border-radius:2px;font-size:11px;">black</b> probe. Right click a terminal to disconnect the wire. Left clicking the same terminal twice will connect one to the terminal and one to the disconnected wire.
+      Select a meter function on the left. Testing the wrong function against a live circuit can damage the meter - just like in the field. Left click a terminal to attach the <span class="probe-tag red">RED</span> probe, left click another to attach the <span class="probe-tag black">BLACK</span> probe. Right click a terminal to disconnect the wire. Left clicking the same terminal twice will connect one to the terminal and one to the disconnected wire.
     </div>
   </div>
   <div class="meter-wrap">
@@ -306,9 +306,9 @@
       <div id="vavBoxGrid" class="vav-grid"></div>
     </div>
     <div class="panel">
-      <h2>Field Control Panel &mdash; VAV Terminal Strips</h2>
+      <h2>Field Control Panel - VAV Terminal Strips</h2>
       <div class="helpbox">
-        Select a meter function on the left. Testing the wrong function against a live circuit can damage the meter &mdash; just like in the field. Left click a terminal to attach the <b style="background:var(--red);color:#fff;padding:0 4px;border-radius:2px;font-size:11px;">red</b> probe, left click another to attach the <b style="background:var(--text);color:var(--bg);padding:0 4px;border-radius:2px;font-size:11px;">black</b> probe. Right click a terminal to disconnect the wire. Left clicking the same terminal twice will connect one to the terminal and one to the disconnected wire.
+        Select a meter function on the left. Testing the wrong function against a live circuit can damage the meter - just like in the field. Left click a terminal to attach the <span class="probe-tag red">RED</span> probe, left click another to attach the <span class="probe-tag black">BLACK</span> probe. Right click a terminal to disconnect the wire. Left clicking the same terminal twice will connect one to the terminal and one to the disconnected wire.
       </div>
       <div class="btnrow" style="margin-top:10px;">
         <label class="field" style="margin:0;">Box<select id="vavTermBoxSelect" style="min-width:80px;"></select></label>
@@ -442,7 +442,7 @@
   </div>
 </div>
 
-<div class="footer-note">Simplified training model &mdash; all setpoints, PID control loops, and psychrometrics run locally in your browser. Not a substitute for manufacturer sequences of operation.</div>
+<div class="footer-note">Simplified training model - all setpoints, PID control loops, and psychrometrics run locally in your browser. Not a substitute for manufacturer sequences of operation.</div>
 
 <script src="js/core.js"></script>
 <script src="js/setup.js"></script>
