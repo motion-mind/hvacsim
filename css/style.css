@@ -234,10 +234,9 @@ table.sp td{padding:6px 8px;border-bottom:1px solid var(--line-soft);}
 table.sp input{width:90px;padding:5px 7px;font-size:12.5px;}
 table.sp tr:last-child td{border-bottom:none;}
 
-.safety-row{display:flex;gap:10px;flex-wrap:wrap;}
 .safety-chip{
   display:flex;align-items:center;gap:8px;background:var(--panel-inset);border:1px solid var(--line-soft);
-  border-radius:4px;padding:8px 12px;font-size:12px;min-width:180px;
+  border-radius:5px;padding:7px 10px;font-size:12px;margin-bottom:6px;
 }
 .safety-chip .dot{width:10px;height:10px;}
 .safety-chip .lbl{flex:1;}
