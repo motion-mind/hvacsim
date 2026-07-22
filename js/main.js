@@ -325,33 +325,7 @@ document.getElementById('vavFaultBox').addEventListener('change', populateVavFau
 document.getElementById('btnApplyVavFault').addEventListener('click', ()=>{ const boxNum = parseInt(document.getElementById('vavFaultBox').value); const typeId = document.getElementById('vavFaultPicker').value; if(!typeId) return; applyVavFaultById(typeId, boxNum); });
 document.getElementById('btnResetVavFaults').addEventListener('click', ()=>{ activeVavScenario = null; clearVavFaults(); document.getElementById('vavScenarioBriefing').style.display = 'none'; document.getElementById('vavScenarioSelect').value = ''; document.getElementById('btnEndVavScenario').style.display = 'none'; });
 
-document.getElementById('editLayoutToggle').addEventListener('click', ()=>{
-  layoutEditMode = !layoutEditMode;
-  document.getElementById('editLayoutToggle').classList.toggle('on', layoutEditMode);
-  document.getElementById('layoutEditControls').style.display = layoutEditMode? 'flex':'none';
-  document.getElementById('addElementRow').style.display = layoutEditMode? 'flex':'none';
-  document.getElementById('layoutEditHint').style.display = layoutEditMode? 'block':'none';
-  renderCustomElements();
-  attachLayoutDragging();
-});
-document.getElementById('btnAddElement').addEventListener('click', ()=>{ addCustomElement(document.getElementById('addElementType').value); });
-document.getElementById('btnRefreshLayoutTemplates').addEventListener('click', refreshLayoutTemplateList);
-document.getElementById('btnSaveLayoutTemplate').addEventListener('click', ()=>{ saveLayoutTemplate(); });
-document.getElementById('layoutTemplateSelect').addEventListener('change', (e)=>loadLayoutTemplate(e.target.value));
-document.getElementById('btnDeleteLayoutTemplate').addEventListener('click', ()=>{ const key = document.getElementById('layoutTemplateSelect').value; if(!key){ alert('Select a template to delete first.'); return; } deleteLayoutTemplate(key); });
-document.getElementById('btnResetLayout').addEventListener('click', ()=>{ layoutOverrides = {...factoryLayoutAdjustments}; customElements = []; document.getElementById('layoutTemplateSelect').value = ''; buildSchematic(); });
-document.getElementById('btnExportLayout').addEventListener('click', ()=>{ if(Object.keys(layoutOverrides).length===0 && customElements.length===0){ alert('Nothing has been moved or added yet.'); return; } exportLayout(); });
-document.getElementById('btnCopyExportLayout').addEventListener('click', copyLayoutExport);
-document.getElementById('btnDownloadExportLayout').addEventListener('click', downloadLayoutExport);
-document.getElementById('btnImportLayout').addEventListener('click', ()=>{ document.getElementById('importLayoutFile').click(); });
-document.getElementById('importLayoutFile').addEventListener('change', (e)=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = (evt)=>{ const ok = importLayoutFromJSON(evt.target.result); if(ok){ alert('Layout imported.'); } else{ alert('Could not read that file.'); } };
-  reader.readAsText(file);
-  e.target.value = '';
-});
+
 
 document.getElementById('btnApplyFault').addEventListener('click', ()=>{ const id = document.getElementById('faultPicker').value; if(id) applyFaultById(id); });
 document.getElementById('btnRandomFault').addEventListener('click', ()=>{ const options = applicableFaults(); const f = pick(options); applyFaultById(f.id); });
