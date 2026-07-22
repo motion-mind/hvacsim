@@ -227,8 +227,8 @@ function buildSchematicCore(){
     if(config.steamHumid) add('humid', 54, 'humid', 'Steam Humidifier');
     add('supplydamper', 50, 'coldDamper', 'Cold Deck Damper');
   } else {
-    if(config.driveType==='starter') add('supplydamper', 54, 'supplydamper', 'Supply Duct Damper');
     if(config.reheat) add('coil', 80, 'reheat', 'Reheat Coil');
+    if(config.driveType==='starter') add('supplydamper', 54, 'supplydamper', 'Supply Duct Damper');
     if(config.steamHumid) add('humid', 54, 'humid', 'Steam Humidifier');
   }
   add('discharge', 68, 'discharge', 'To Zones');
