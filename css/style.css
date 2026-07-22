@@ -313,12 +313,12 @@ details.panel-collapsible[open] summary{margin-bottom:14px;}
 .tstrip{display:flex;gap:6px;flex-wrap:wrap;}
 .terminal{
   font-family:var(--mono);font-size:11px;border:1px solid var(--line);background:var(--panel);
-  border-radius:4px;padding:4px 6px 8px;cursor:pointer;width:92px;height:78px;text-align:center;position:relative;
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;box-sizing:border-box;
+  border-radius:4px;padding:6px 6px 6px;cursor:pointer;width:92px;height:78px;text-align:center;position:relative;
+  display:flex;flex-direction:column;align-items:center;box-sizing:border-box;
 }
 .terminal:hover{border-color:var(--cyan-dim);}
-.terminal .tid{font-weight:700;color:var(--text);}
-.terminal .tname{display:block;color:var(--text-faint);font-size:10px;margin-top:2px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.terminal .tid{font-weight:700;color:var(--text);margin-top:4px;}
+.terminal .tname{display:block;color:var(--text);font-size:10px;margin-top:auto;margin-bottom:4px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
 .terminal.probe-red{border-color:var(--red);box-shadow:0 0 0 1px var(--red) inset;}
 .terminal.probe-black{border-color:#aaa;box-shadow:0 0 0 1px #aaa inset;}
 .terminal.wire-disconnected{background:var(--panel-inset);}
