@@ -93,6 +93,10 @@ function buildSimState(){
     overrideReturnFanStart: false, overrideReturnFanStartVal: false,
     overrideHotDeckFanSpeed: false, overrideHotDeckFanSpeedVal: 0,
     overrideHotDeckFanStart: false, overrideHotDeckFanStartVal: false,
+    overrideSupplyDamper: false, overrideSupplyDamperVal: 0,
+    overrideColdDamper: false, overrideColdDamperVal: 0,
+    overrideHotDamper: false, overrideHotDamperVal: 0,
+    overrideEADamper: false, overrideEADamperVal: 0,
     pid: {
       supplyFlow: new PID(0.008,0.004,0,0,100),
       staticP: new PID(18,2.5,0,0,100),
@@ -459,7 +463,8 @@ function tick(){
     sim.preheatValve = r.preheatValve; sim.preheatLvg = r.preheatLvg;
 
     let eaTarget;
-    if(activeFaults.eaDamperStuck!==undefined){ eaTarget = activeFaults.eaDamperStuck; }
+    if(sim.overrideEADamper){ eaTarget = sim.overrideEADamperVal !== undefined ? sim.overrideEADamperVal : 0; }
+    else if(activeFaults.eaDamperStuck!==undefined){ eaTarget = activeFaults.eaDamperStuck; }
     else { eaTarget = wantRun ? (sim.economizerActive ? 100 : 0) : 0; }
     if(!config.includeEa) eaTarget = 0;
     sim.eaDamperPos = slew(sim.eaDamperPos, eaTarget, DAMPER_SLEW);
@@ -667,7 +672,8 @@ function tick(){
     let targetPct = sfStartCmd ? (sim.overrideSupplyFanSpeed ? sim.overrideSupplyFanSpeedVal : clamp(Math.max(outPct,25),25,100)) : 0;
     if(isWireDisconnected('Supply Fan Drive Speed Command')) targetPct = 0;
     sim.supplyFanPct = slew(sim.supplyFanPct, targetPct, 100 / 120);
-    sim.supplyDamperPos = slew(sim.supplyDamperPos, sfStartCmd? 100 : 0, DAMPER_SLEW);
+    const sdTargetVfd = sim.overrideSupplyDamper ? (sim.overrideSupplyDamperVal || 0) : (sfStartCmd ? 100 : 0);
+    sim.supplyDamperPos = slew(sim.supplyDamperPos, sdTargetVfd, DAMPER_SLEW);
     supplyFlowFraction = sim.supplyFanPct/100;
   } else {
     let targetPct = sfStartCmd ? (sim.overrideSupplyFanSpeed ? sim.overrideSupplyFanSpeedVal : 100) : 0;
@@ -678,7 +684,7 @@ function tick(){
       const cfmSP = config.ductType==='dual'? sp.supplyCfmSP / 2 : sp.supplyCfmSP;
       damperOut = sim.pid.supplyDamper.update(cfmSP, sim.supplyCfm, DT, false);
     } else { damperOut = sim.pid.supplyDamper.update(sp.staticSP, sim.staticPressureDisplay, DT, false); }
-    let damperTarget = sfStartCmd? damperOut : 0;
+    let damperTarget = sim.overrideSupplyDamper ? (sim.overrideSupplyDamperVal || 0) : (sfStartCmd ? damperOut : 0);
     if(isWireDisconnected('Supply Duct Damper Actuator Command')) damperTarget = 0;
     sim.supplyDamperPos = slew(sim.supplyDamperPos, damperTarget, DAMPER_SLEW);
     supplyFlowFraction = sim.supplyDamperPos/100;
@@ -719,7 +725,7 @@ function tick(){
   } else { sim.sp23 = 0; }
 
   if(config.ductType==='dual'){
-    let coldDamperTarget = activeFaults.coldDeckDamperStuck!==undefined? activeFaults.coldDeckDamperStuck : (wantRunCold? 92 : 0);
+    let coldDamperTarget = sim.overrideColdDamper ? (sim.overrideColdDamperVal || 0) : (activeFaults.coldDeckDamperStuck !== undefined ? activeFaults.coldDeckDamperStuck : (wantRunCold ? 92 : 0));
     if(isWireDisconnected('Cold Deck Regulating Damper')) coldDamperTarget = 0;
     sim.coldDeckDamperPos = slew(sim.coldDeckDamperPos, coldDamperTarget, DAMPER_SLEW);
     sim.supplyCfm = sim.supplyCfm * (sim.coldDeckDamperPos/100);
@@ -728,7 +734,7 @@ function tick(){
       const filterDerate = activeFaults.hotDeckDirtyFilter? 0.75 : 1;
       sim.hotDeckCfm = hdStartCmd? (sp.maxCfmSP / 2)*(sim.hotDeckFanPct/100)*capFracHot*filterDerate*(0.97+0.06*Math.random())*flowDegradation : 0;
     }
-    let hotDamperTarget = activeFaults.hotDeckDamperStuck!==undefined? activeFaults.hotDeckDamperStuck : (wantRunHot? 92 : 0);
+    let hotDamperTarget = sim.overrideHotDamper ? (sim.overrideHotDamperVal || 0) : (activeFaults.hotDeckDamperStuck !== undefined ? activeFaults.hotDeckDamperStuck : (wantRunHot ? 92 : 0));
     if(isWireDisconnected('Hot Deck Regulating Damper')) hotDamperTarget = 0;
     sim.hotDeckDamperPos = slew(sim.hotDeckDamperPos, hotDamperTarget, DAMPER_SLEW);
     sim.hotDeckCfm = sim.hotDeckCfm * (sim.hotDeckDamperPos/100);

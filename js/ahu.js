@@ -138,6 +138,10 @@ function renderSetpoints(){
       overrideRow('Hot Deck Fan Start Command Override', 'HotDeckFanStart', 'state', 1, true);
       if(config.driveType==='vfd') overrideRow('Hot Deck Fan Speed Reference Override', 'HotDeckFanSpeed', '%', 1);
     }
+    if(config.driveType==='starter') overrideRow('Supply Duct Damper Override', 'SupplyDamper', '%', 1);
+    if(config.ductType==='dual') overrideRow('Cold Deck Damper Override', 'ColdDamper', '%', 1);
+    if(config.ductType==='dual') overrideRow('Hot Deck Damper Override', 'HotDamper', '%', 1);
+    if(config.includeEa) overrideRow('Exhaust Air Damper Override', 'EADamper', '%', 1);
   }
 
   document.getElementById('setpointTable').querySelector('tbody').innerHTML = rows.join('');
