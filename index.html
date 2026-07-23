@@ -57,8 +57,13 @@
       <button class="btn" id="btnSaveSetup">Save Current Setup</button>
       <button class="btn" id="btnRefreshSaved">Refresh List</button>
     </div>
+    <div class="savebar" style="margin-top:8px;">
+      <button class="btn" id="btnExportSetup">Export Setup to File</button>
+      <button class="btn" id="btnImportSetup">Import Setup from File</button>
+      <input type="file" id="importSetupFile" accept="application/json" style="display:none;">
+    </div>
     <div class="saved-list" id="savedList"></div>
-    <small class="hint">Saved setups are stored locally to this simulator session (browser storage), not shared with anyone else.</small>
+    <small class="hint">Saved setups use browser storage. Export/import to share or backup configurations as .json files.</small>
   </div>
 </div>
 

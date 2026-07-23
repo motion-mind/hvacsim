@@ -260,6 +260,28 @@ document.getElementById('btnRandomizeCfg').addEventListener('click', ()=>{
 document.getElementById('btnSaveSetup').addEventListener('click', saveSetup);
 document.getElementById('btnRefreshSaved').addEventListener('click', refreshSavedList);
 
+document.getElementById('btnExportSetup').addEventListener('click', ()=>{
+  const name = document.getElementById('saveName').value.trim() || 'ahu-setup';
+  const payload = { config: JSON.parse(JSON.stringify(config)), name };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name+'.json'; a.click(); URL.revokeObjectURL(a.href);
+});
+document.getElementById('btnImportSetup').addEventListener('click', ()=>{ document.getElementById('importSetupFile').click(); });
+document.getElementById('importSetupFile').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt)=>{
+    try {
+      const data = JSON.parse(evt.target.result);
+      if(data.config){ Object.assign(config, data.config); renderSetupGrid(); }
+      else { alert('Invalid setup file.'); }
+    } catch(err){ alert('Could not read setup file: '+err); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
 document.getElementById('oatSlider').addEventListener('input', (e)=>{ sim.oatTarget = parseFloat(e.target.value); syncOatReadout(); updateSchematicReadouts(); });
 document.getElementById('oaRhSlider').addEventListener('input', (e)=>{ sim.oaRHTarget = parseFloat(e.target.value)/100; syncOaRhReadout(); updateSchematicReadouts(); });
 document.getElementById('ageSlider').addEventListener('input', (e)=>{ sim.age = parseFloat(e.target.value); sim.ageTarget = sim.age; syncAgeReadout(); updateSchematicReadouts(); });
