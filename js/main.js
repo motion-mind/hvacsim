@@ -262,7 +262,7 @@ document.getElementById('btnRefreshSaved').addEventListener('click', refreshSave
 
 document.getElementById('oatSlider').addEventListener('input', (e)=>{ sim.oatTarget = parseFloat(e.target.value); syncOatReadout(); updateSchematicReadouts(); });
 document.getElementById('oaRhSlider').addEventListener('input', (e)=>{ sim.oaRHTarget = parseFloat(e.target.value)/100; syncOaRhReadout(); updateSchematicReadouts(); });
-document.getElementById('ageSlider').addEventListener('input', (e)=>{ sim.ageTarget = parseFloat(e.target.value); syncAgeReadout(); updateSchematicReadouts(); });
+document.getElementById('ageSlider').addEventListener('input', (e)=>{ sim.age = parseFloat(e.target.value); sim.ageTarget = sim.age; syncAgeReadout(); updateSchematicReadouts(); });
 
 document.getElementById('sooHeader').addEventListener('click', ()=>{
   const content = document.getElementById('sooContent');
