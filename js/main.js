@@ -256,6 +256,37 @@ enablePanZoom();`;
 
 document.getElementById('btnPopOut').addEventListener('click', openPopOut);
 
+function alignSidebarTabs(){
+  const lower = document.getElementById('sidebarLower');
+  if(!lower) return;
+  if(window.innerWidth <= 768){
+    lower.style.marginTop = '';
+    return;
+  }
+  const activeTabPanel = document.querySelector('.tabpanel.active');
+  if(!activeTabPanel) return;
+  
+  let activePanel = null;
+  const panels = activeTabPanel.querySelectorAll('.panel');
+  for(let p of panels){
+    if(p.offsetWidth > 0 && p.offsetHeight > 0 && window.getComputedStyle(p).display !== 'none'){
+      activePanel = p;
+      break;
+    }
+  }
+  if(!activePanel) activePanel = activeTabPanel.querySelector('.panel') || document.querySelector('#tab-setup .panel');
+  const firstTab = document.querySelector('.sidebar .tab-btn');
+  if(!activePanel || !firstTab) return;
+  
+  lower.style.marginTop = '0px';
+  const panelTop = activePanel.getBoundingClientRect().top;
+  const currentTabTop = firstTab.getBoundingClientRect().top;
+  const delta = panelTop - currentTabTop;
+  if(delta > 0){
+    lower.style.marginTop = Math.round(delta) + 'px';
+  }
+}
+
 function switchTab(name){
   tabScrolls[currentTab] = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
   currentTab = name;
@@ -266,9 +297,12 @@ function switchTab(name){
   if(name==='ahu'){ buildSchematic(); renderSetpoints(); }
   if(name==='vav'){ renderVavTab(); }
   if(name==='ef'){ renderExhaustFanTab(); }
-  setTimeout(() => { window.scrollTo(0, tabScrolls[name] || 0); }, 0);
+  alignSidebarTabs();
+  setTimeout(() => { window.scrollTo(0, tabScrolls[name] || 0); alignSidebarTabs(); }, 0);
 }
 document.querySelectorAll('.tab-btn').forEach(b=> b.addEventListener('click', ()=>switchTab(b.dataset.tab)) );
+window.addEventListener('resize', alignSidebarTabs);
+window.addEventListener('load', alignSidebarTabs);
 
 /* ============================================================
    APPLY CONFIGURATION
@@ -578,4 +612,5 @@ applyConfiguration();
 refreshSavedList();
 refreshLayoutTemplateList();
 populateScenarioPicker();
+alignSidebarTabs();
 requestAnimationFrame(loopThrottle);

@@ -28,8 +28,13 @@
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;background:var(--void);color:var(--text);font-family:var(--sans);}
 body{min-height:100vh;}
-.app-layout{display:flex;min-height:100vh;}
-.sidebar{width:140px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:16px 8px;gap:14px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.app-layout{display:flex;min-height:100vh;overflow-x:hidden;}
+.sidebar{width:140px;min-width:140px;max-width:140px;flex-shrink:0;background:var(--panel);border-right:none;display:flex;flex-direction:column;align-items:stretch;padding:16px 0 16px 8px;gap:14px;position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden;box-sizing:border-box;}
+.sidebar .theme-toggle-btn, .sidebar .sidebar-controls, .sidebar .sidebar-section{width:calc(100% - 8px) !important;margin-right:8px !important;}
+.sidebar .sidebar-controls{display:flex;flex-direction:column;gap:6px;}
+.sidebar .sidebar-lower{width:100%;min-width:100%;max-width:100%;display:flex;flex-direction:column;gap:14px;box-sizing:border-box;}
+.main-area{flex:1;min-width:0;padding:0;}
+.topbar{border-left:1px solid var(--line);}
 .sidebar .status-chip-btn{
   width:100%;display:flex;align-items:center;justify-content:center;gap:6px;
   font-family:var(--mono);font-size:11px;font-weight:600;padding:8px 6px;
@@ -40,10 +45,22 @@ body{min-height:100vh;}
 .sidebar .status-chip-btn:hover{border-color:var(--cyan-dim);color:var(--text);}
 .sidebar .status-chip-btn.running{border-color:var(--green-dim);color:var(--green);background:color-mix(in srgb,var(--green-dim) 20%,transparent);}
 .sidebar .status-chip-btn.trip{border-color:var(--red-dim);color:var(--red);background:color-mix(in srgb,var(--red-dim) 25%,transparent);}
-.sidebar .tabs{display:flex;flex-direction:column;width:100%;gap:4px;}
-.sidebar .tab-btn{width:100%;text-align:center;font-size:11px;padding:8px 6px;border-radius:4px;background:none;border:1px solid transparent;color:var(--text-dim);cursor:pointer;font-family:var(--mono);letter-spacing:.04em;}
-.sidebar .tab-btn:hover{color:var(--text);border-color:var(--line);}
-.sidebar .tab-btn.active{color:var(--cyan);border-color:var(--cyan-dim);background:color-mix(in srgb,var(--cyan-dim) 20%,transparent);}
+.sidebar .tabs{display:flex;flex-direction:column;width:100%;gap:4px;min-height:180px;z-index:10;box-sizing:border-box;}
+.sidebar .tab-btn{
+  width:100%;text-align:left;font-size:11px;padding:8px 8px 8px 10px;
+  border-radius:6px 0 0 6px;background:var(--panel-inset);border:1px solid var(--line);
+  color:var(--text-dim);cursor:pointer;
+  font-family:var(--mono);letter-spacing:.04em;position:relative;transition:all .15s ease;
+  box-sizing:border-box;
+}
+.sidebar .tab-btn:not(.active){border-right:1px solid var(--line);}
+.sidebar .tab-btn:hover:not(.active){color:var(--text);border-color:var(--line-soft);background:color-mix(in srgb,var(--panel-inset) 70%,var(--panel-raised));}
+.sidebar .tab-btn.active{
+  color:var(--cyan);font-weight:700;background:var(--void);
+  border:1px solid var(--cyan-dim);border-right:none;
+  border-left:3px solid var(--cyan);box-shadow:-3px 1px 6px rgba(0,0,0,0.18);
+  position:relative;z-index:10;
+}
 .sidebar .speed-group{display:flex;flex-direction:column;width:100%;border:1px solid var(--line);border-radius:4px;overflow:hidden;}
 .sidebar .speed-group button{font-family:var(--mono);font-size:11px;background:var(--panel-inset);color:var(--text-dim);border:none;padding:6px 11px;cursor:pointer;border-bottom:1px solid var(--line);}
 .sidebar .speed-group button:last-child{border-bottom:none;}
@@ -66,6 +83,12 @@ body{min-height:100vh;}
 .sidebar-ctrl-btn.on{border-color:var(--cyan-dim);color:var(--cyan);background:color-mix(in srgb,var(--cyan-dim) 15%,transparent);}
 .sidebar-ctrl-btn:disabled,.sidebar-ctrl-btn.disabled{
   opacity:0.35;cursor:not-allowed;border-color:var(--line-soft);color:var(--text-faint);background:var(--panel-inset);
+}
+.sidebar-section{width:100%;display:flex;flex-direction:column;gap:4px;}
+.sidebar-label{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);
+  text-align:center;margin-bottom:2px;
 }
 .main-area{flex:1;min-width:0;padding:0;}
 ::selection{background:var(--cyan-dim);color:#fff;}
