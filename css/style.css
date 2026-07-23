@@ -60,8 +60,6 @@ body.theme-light .schematic-wrap{background:#dfe4ea;}
 body.theme-light .enable-card.on{background:#e3f6ea;border-color:#2fa860;}
 body.theme-light .enable-card.on .enable-status{color:#1f8a4c;text-shadow:none;}
 
-.main-area{padding:0;}
-
 .topbar{display:flex;align-items:center;justify-content:center;padding:14px 22px;border-bottom:1px solid var(--line);}
 .brand{display:flex;align-items:center;gap:12px;}
 .brand .mark{
@@ -82,7 +80,7 @@ body.theme-light .enable-card.on .enable-status{color:#1f8a4c;text-shadow:none;}
 .dot.warn{background:var(--amber);box-shadow:0 0 6px var(--amber);}
 .dot.blue{background:var(--blue-cold);box-shadow:0 0 6px var(--blue-cold);}
 
-.tabpanel{display:none;padding:20px 22px 60px;max-width:1800px;margin:0 auto;}
+.tabpanel{display:none;padding:20px 22px 60px;}
 .tabpanel.active{display:block;}
 
 .panel{
