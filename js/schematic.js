@@ -586,7 +586,8 @@ function updateSchematicReadouts(){
           let vfdEl = document.getElementById('vfdBubble_'+it.id);
           if(!vfdEl){ vfdEl = document.createElementNS('http://www.w3.org/2000/svg','g'); vfdEl.id='vfdBubble_'+it.id; g.insertBefore(vfdEl, g.firstChild); }
           const vfdPct = it.id==='supplyfan' ? sim.supplyFanPct : sim.hotDeckFanPct;
-          setHtmlCached(vfdEl, '<g transform="translate('+(originX - 28)+','+(edgeY - 6)+') scale(0.7)">'+gfxWrap('vfd', 'value-'+roundTo10(vfdPct), 1, it.id+'_vfd')+'</g>');
+          const vfdY = actualFlip ? (edgeY + 6) : (edgeY - 50);
+          setHtmlCached(vfdEl, '<g transform="translate('+(originX - 30)+','+vfdY+') scale(0.65)">'+gfxWrap('vfd', 'value-'+roundTo10(vfdPct), 1, it.id+'_vfd')+'</g>');
         }
       }
 
@@ -654,7 +655,7 @@ function updateSchematicReadouts(){
         if(config.driveType==='vfd'){
           let vfdRg = document.getElementById('vfdBubble_return');
           if(!vfdRg){ vfdRg = document.createElementNS('http://www.w3.org/2000/svg','g'); vfdRg.id='vfdBubble_return'; rg.insertBefore(vfdRg, rg.firstChild); }
-          setHtmlCached(vfdRg, '<g transform="translate('+(window._schemReturnFanCx - 28)+','+(window._schemReturnY - 28)+') scale(0.7)">'+gfxWrap('vfd', 'value-'+roundTo10(sim.returnFanPct), 1, 'return_vfd')+'</g>');
+          setHtmlCached(vfdRg, '<g transform="translate('+(window._schemReturnFanCx - 30)+','+(window._schemReturnY - 52)+') scale(0.65)">'+gfxWrap('vfd', 'value-'+roundTo10(sim.returnFanPct), 1, 'return_vfd')+'</g>');
         }
       }
     }
