@@ -746,18 +746,39 @@ function tick(){
       sim.supplyCfm = sim.supplyCfm * (sim.coldDeckDamperPos/100);
       sim.hotDeckCfm = (hdStartCmd ? (sp.maxCfmSP / 2)*(sim.hotDeckFanPct/100)*capFracHot*filterDerate*(0.97+0.06*Math.random())*flowDegradation : 0) * (sim.hotDeckDamperPos/100);
     } else {
-      // Single-source (shared fan) dual duct: one fan feeds both decks. When a
-      // deck damper closes while the fan is running, its share is pushed onto
-      // the deck that is still open — that deck's CFM and duct static rise
-      // instead of the airflow being lost. If both close, flow stops and the
-      // running fan pressurizes the common duct (see spBefore / HI-PRS trip).
+      // Single-source (shared fan) dual duct: one fan feeds both decks. Total
+      // fan output is throttled by how much supply path is actually open, and
+      // the throttle is split between the decks in proportion to each deck's
+      // openness — deck damper position × how much that deck's VAV boxes are
+      // actually calling for air. Closing a deck damper (or shutting all of a
+      // deck's boxes) transfers that deck's share onto the other deck, so the
+      // surviving deck's CFM and downstream static rise. Close both and flow
+      // stops, the running fan pressurizes the common duct, and HI-PRS trips.
       const coldF = sim.coldDeckDamperPos/100, hotF = sim.hotDeckDamperPos/100;
+      const deckRef = Math.max(sp.maxCfmSP / 2, 1);
+      let coldDem = 1, hotDem = 1; // constant-volume (no VAV boxes): equal demand
+      if(sim.vav && sim.vav.length){
+        coldDem = 0; hotDem = 0;
+        sim.vav.forEach(b => {
+          if(b.type !== 'fcu'){
+            if(b.coldDamperPos !== undefined) coldDem += (b.designCfm || 0) * (b.coldDamperPos/100);
+            if(b.hotDamperPos  !== undefined) hotDem  += (b.designCfm || 0) * (b.hotDamperPos/100);
+          }
+        });
+        coldDem = coldDem / deckRef;
+        hotDem  = hotDem  / deckRef;
+      }
+      const coldPath = coldF * Math.max(0, coldDem);
+      const hotPath  = hotF  * Math.max(0, hotDem);
       const fanOut = sim.supplyCfm; // fan output before the deck dampers
-      const coldClosed = coldF < 0.15, hotClosed = hotF < 0.15;
-      if(coldClosed && hotClosed){ sim.supplyCfm = 0; sim.hotDeckCfm = 0; }
-      else if(coldClosed){ sim.supplyCfm = 0; sim.hotDeckCfm = fanOut; }
-      else if(hotClosed){ sim.supplyCfm = fanOut; sim.hotDeckCfm = 0; }
-      else { sim.supplyCfm = fanOut * coldF; sim.hotDeckCfm = fanOut * hotF; }
+      const pathTotal = coldPath + hotPath;
+      if(pathTotal < 0.002){ sim.supplyCfm = 0; sim.hotDeckCfm = 0; }
+      else {
+        const throughput = Math.max(Math.min(pathTotal, 1), 0.02); // what can actually flow
+        const delivered = fanOut * throughput;
+        sim.supplyCfm  = delivered * (coldPath / pathTotal);
+        sim.hotDeckCfm = delivered * (hotPath  / pathTotal);
+      }
     }
   } else { sim.coldDeckDamperPos = 0; sim.hotDeckDamperPos = 0; }
 
