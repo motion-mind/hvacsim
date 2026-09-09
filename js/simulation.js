@@ -774,7 +774,13 @@ function tick(){
       const pathTotal = coldPath + hotPath;
       if(pathTotal < 0.002){ sim.supplyCfm = 0; sim.hotDeckCfm = 0; }
       else {
-        const throughput = Math.max(Math.min(pathTotal, 1), 0.02); // what can actually flow
+        // Minimum supply airflow: even when every VAV box is satisfied the AHU
+        // still moves ~25% of its rated flow (space temperature maintenance,
+        // ventilation, unseen common areas), routed through whichever deck path
+        // is open. Only a physical blockage (deck/supply dampers shut) drops
+        // below this.
+        const minThru = (coldF + hotF > 0.05) ? 0.25 : 0;
+        const throughput = clamp(Math.max(pathTotal, minThru), 0.02, 1); // fraction of fan output that flows
         const delivered = fanOut * throughput;
         sim.supplyCfm  = delivered * (coldPath / pathTotal);
         sim.hotDeckCfm = delivered * (hotPath  / pathTotal);
@@ -836,7 +842,7 @@ function tick(){
         (activeFaults['vavPowerLost' + (i+1)] || (activeFaults['vavDamperStuck' + (i+1)] !== undefined && activeFaults['vavDamperStuck' + (i+1)] < 20)));
     }
     let deadhead = false;
-    if(wantRunCold && sim.supplyFanPct > 55 && rawOpen < 0.08){
+    if(wantRunCold && sim.supplyFanPct > 55 && rawOpen < 0.04){
       sim.deadheadTimer = (sim.deadheadTimer || 0) + DT;
       if(sim.deadheadTimer > 6) deadhead = true;
     } else { sim.deadheadTimer = 0; }
