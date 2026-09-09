@@ -73,6 +73,33 @@ function renderEfficiencyReadings(){
   el.innerHTML = html;
 }
 
+function renderStaticReadings(){
+  const el = document.getElementById('staticReadings');
+  if(!el) return;
+  const indep = config.ductType==='dual' && config.dualDuctIndependent;
+  const spAfter = sim.sp23 !== undefined ? sim.sp23 : sp.highStaticSP * 0.9;
+  let html = '';
+  if(indep){
+    html += readingCard('Main Duct SP (Before DPR)', '\u2014', '', false, 'Dedicated fans per deck — deck static is measured downstream of each deck damper');
+    html += readingCard('Cold Deck SP (After DPR)', fmt(sim.sp23Cold !== undefined ? sim.sp23Cold : spAfter, 2), 'in. w.c.', false);
+    html += readingCard('Hot Deck SP (After DPR)', fmt(sim.sp23Hot !== undefined ? sim.sp23Hot : spAfter, 2), 'in. w.c.', false);
+  } else {
+    const spb = sim.spBeforeDisplay !== undefined ? sim.spBeforeDisplay : (sim.spBefore || 0);
+    html += readingCard('Main Duct SP (Before DPR)', fmt(spb, 2), 'in. w.c.', spb > sp.highStaticSP,
+      'Static pressure upstream of the supply output dampers. Rises and trips the HI-PRS safety if the output dampers close while the fan is running.');
+    if(config.ductType==='dual'){
+      html += readingCard('Cold Deck SP (After DPR)', fmt(sim.sp23Cold !== undefined ? sim.sp23Cold : spAfter, 2), 'in. w.c.', false,
+        'Duct static on the cold deck, downstream of the deck damper');
+      html += readingCard('Hot Deck SP (After DPR)', fmt(sim.sp23Hot !== undefined ? sim.sp23Hot : spAfter, 2), 'in. w.c.', false,
+        'Duct static on the hot deck, downstream of the deck damper');
+    } else {
+      html += readingCard('Duct SP (After DPR)', fmt(spAfter, 2), 'in. w.c.', false,
+        'Duct static reading 2/3 down the supply duct, downstream of the output dampers');
+    }
+  }
+  el.innerHTML = html;
+}
+
 function driveSignalDisplay(pct){
   switch(config.driveSignal){
     case 'vdc': return fmt((pct/100)*10,2)+' VDC';
@@ -403,6 +430,7 @@ function renderAhuFrame(){
   if(sim.ef && document.getElementById('tab-ef').classList.contains('active')){ renderExhaustFanTab(); }
   renderFanStatus();
   renderSafeties();
+  renderStaticReadings();
   const enDot = document.getElementById('topEnableDot');
   const enTxt = document.getElementById('topEnableText');
   const mobDot = document.getElementById('mobEnableDot');

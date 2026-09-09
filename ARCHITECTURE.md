@@ -177,6 +177,20 @@ Order of work inside `tick()` (read the source for exact math):
    aquastat latch, dirty-filter static rise, etc.
 9. `tickVav(wantRun)` then `tickExhaustFan(...)`.
 
+Static-pressure model notes (edit with care — see the fan/static block in `tick()`):
+- `sim.spBefore` / `sim.spBeforeDisplay` — **main-duct static measured upstream
+  of the supply output dampers** (supply duct damper, cold/hot deck dampers, or
+  VAV primaries). Rises only while the fan runs *and* the output dampers are
+  commanded shut; that is what trips the HI-PRS safety (both deck dampers shut,
+  starter supply damper shut, or all VAV primaries faulted closed). = 0 for
+  independent-dual (per-deck fans/sensors instead).
+- `sim.sp23Cold` / `sim.sp23Hot` — downstream deck static (after the deck
+  dampers, ~2/3 duct), proportional to how much flow each deck is actually
+  moving. Shared-dual (single-source) decks redistribute: if one deck damper
+  closes while the fan runs, its share is pushed to the other deck (its CFM and
+  downstream static rise); CFM control for a shared fan uses **total delivered
+  flow** (`supplyCfm + hotDeckCfm`) against the full `supplyCfmSP` setpoint.
+
 `tickVav` steps each `sim.vav` box: zone temp/humidity dynamics from supply
 discharge, per-box cool/heat PID → damper, reheat valve or electric stage (staging
 order depends on `config.vavReheatType`), pressurization & exhaust damper logic
@@ -261,7 +275,7 @@ what sensor faults corrupt (so the DDC looks "fine" while behavior is wrong):
 - `sim.satDisplayTemp` (drifting DAT sensor: `satSensorDrift` reads warm)
 - `sim.oatDisplayTemp` (`oatSensorDriftHigh/Low`, ±15°F)
 - `sim.raDisplayTemp` (`ratSensorDriftHigh`, +10°F)
-- `sim.staticPressureDisplay` (`staticPressureSensorDrift`, −0.6" w.c.)
+- `sim.staticPressureDisplay` / `sim.spBeforeDisplay` (`staticPressureSensorDrift`, −0.6" w.c.)
 
 Each active sensor/valve fault is a key on `activeFaults` read by `tick()` /
 `tickVav()` / the schematic renderer — **never branch UI off `currentFaultDesc`**

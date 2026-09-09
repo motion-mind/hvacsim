@@ -83,6 +83,7 @@ function buildSimState(){
     preheatValve:0, coil1Valve:0, coil2Valve:0, reheatValve:0, humidValve:0, hotDeckValve:0,
     oaDamperPos:0, raDamperPos:100, fireDamperPos:0, supplyDamperPos:0, eaDamperPos:0, exhaustCfm:0,
     coldDeckDamperPos:0, hotDeckDamperPos:0,
+    spBefore:0, spBeforeDisplay:0, sp23Cold:0, sp23Hot:0,
     hotOaDamperPos:0, hotRaDamperPos:100, hotOaCfm:0, hotMaTemp:72,
     supplyFanPct:0, returnFanPct:0, hotDeckFanPct:0,
     boosterPumpRun:false, preheatWaterTemp:WATER.phw, hotDeckCfm:0,
@@ -511,7 +512,8 @@ function tick(){
     hotDeckEnteringIndependent = sim.hotMaTemp + hotFanHeat;
   } else {
     sim.hotDeckFanPct = 0;
-    sim.hotDeckCfm = config.ductType==='dual'? sim.supplyCfm : sim.hotDeckCfm;
+    // Shared-dual deck flows are computed later from the fan output split; do
+    // NOT seed sim.hotDeckCfm here or CFM feedback would double-count it.
   }
 
   const maRH = rhFromW(sim.maTemp || afterFan, Wmix);
@@ -666,8 +668,10 @@ function tick(){
     if(sim.overrideSupplyFanSpeed){ sim.pid.supplyFlow.reset(); sim.pid.staticP.reset(); outPct = 0; }
     else if(!sfStartCmd){ sim.pid.supplyFlow.reset(); sim.pid.staticP.reset(); outPct = 0; }
     else if(config.controlType==='cfm'){
-      const cfmSP = config.ductType==='dual'? sp.supplyCfmSP / 2 : sp.supplyCfmSP;
-      outPct = sim.pid.supplyFlow.update(cfmSP, sim.supplyCfm, DT, false);
+      const sharedDual = config.ductType==='dual' && !config.dualDuctIndependent;
+      const cfmSP = sharedDual ? sp.supplyCfmSP : (config.ductType==='dual' ? sp.supplyCfmSP / 2 : sp.supplyCfmSP);
+      const fb = sharedDual ? ((sim.supplyCfm || 0) + (sim.hotDeckCfm || 0)) : sim.supplyCfm;
+      outPct = sim.pid.supplyFlow.update(cfmSP, fb, DT, false);
     } else { outPct = sim.pid.staticP.update(sp.staticSP, sim.staticPressureDisplay, DT, false); }
     let targetPct = sfStartCmd ? (sim.overrideSupplyFanSpeed ? sim.overrideSupplyFanSpeedVal : clamp(Math.max(outPct,25),25,100)) : 0;
     if(isWireDisconnected('Supply Fan Drive Speed Command')) targetPct = 0;
@@ -681,8 +685,10 @@ function tick(){
     let damperOut;
     if(!sfStartCmd){ sim.pid.supplyDamper.reset(); damperOut = 0; }
     else if(config.controlType==='cfm'){
-      const cfmSP = config.ductType==='dual'? sp.supplyCfmSP / 2 : sp.supplyCfmSP;
-      damperOut = sim.pid.supplyDamper.update(cfmSP, sim.supplyCfm, DT, false);
+      const sharedDual = config.ductType==='dual' && !config.dualDuctIndependent;
+      const cfmSP = sharedDual ? sp.supplyCfmSP : (config.ductType==='dual' ? sp.supplyCfmSP / 2 : sp.supplyCfmSP);
+      const fb = sharedDual ? ((sim.supplyCfm || 0) + (sim.hotDeckCfm || 0)) : sim.supplyCfm;
+      damperOut = sim.pid.supplyDamper.update(cfmSP, fb, DT, false);
     } else { damperOut = sim.pid.supplyDamper.update(sp.staticSP, sim.staticPressureDisplay, DT, false); }
     let damperTarget = sim.overrideSupplyDamper ? (sim.overrideSupplyDamperVal || 0) : (sfStartCmd ? damperOut : 0);
     if(isWireDisconnected('Supply Duct Damper Actuator Command')) damperTarget = 0;
@@ -690,7 +696,8 @@ function tick(){
     supplyFlowFraction = sim.supplyDamperPos/100;
   }
   sim.supplyFans.forEach(f=>{ f.run = sfStartCmd && !f.fail; });
-  const designCfm = config.ductType==='dual'? sp.maxCfmSP / 2 : sp.maxCfmSP;
+  const sharedDualNow = config.ductType==='dual' && !config.dualDuctIndependent;
+  const designCfm = sharedDualNow ? sp.maxCfmSP : (config.ductType==='dual' ? sp.maxCfmSP / 2 : sp.maxCfmSP);
   const flowDegradation = 1 - (ageLossPct / 100) * 0.45;
   let casingLeak = 0;
   if(age >= 50) casingLeak = 0.12;
@@ -728,17 +735,82 @@ function tick(){
     let coldDamperTarget = sim.overrideColdDamper ? (sim.overrideColdDamperVal || 0) : (activeFaults.coldDeckDamperStuck !== undefined ? activeFaults.coldDeckDamperStuck : (wantRunCold ? 92 : 0));
     if(isWireDisconnected('Cold Deck Regulating Damper')) coldDamperTarget = 0;
     sim.coldDeckDamperPos = slew(sim.coldDeckDamperPos, coldDamperTarget, DAMPER_SLEW);
-    sim.supplyCfm = sim.supplyCfm * (sim.coldDeckDamperPos/100);
-    if(config.dualDuctIndependent){
-      const capFracHot = fanWallCapacityFraction(sim.hotDeckFans);
-      const filterDerate = activeFaults.hotDeckDirtyFilter? 0.75 : 1;
-      sim.hotDeckCfm = hdStartCmd? (sp.maxCfmSP / 2)*(sim.hotDeckFanPct/100)*capFracHot*filterDerate*(0.97+0.06*Math.random())*flowDegradation : 0;
-    }
     let hotDamperTarget = sim.overrideHotDamper ? (sim.overrideHotDamperVal || 0) : (activeFaults.hotDeckDamperStuck !== undefined ? activeFaults.hotDeckDamperStuck : (wantRunHot ? 92 : 0));
     if(isWireDisconnected('Hot Deck Regulating Damper')) hotDamperTarget = 0;
     sim.hotDeckDamperPos = slew(sim.hotDeckDamperPos, hotDamperTarget, DAMPER_SLEW);
-    sim.hotDeckCfm = sim.hotDeckCfm * (sim.hotDeckDamperPos/100);
+
+    if(config.dualDuctIndependent){
+      // Dedicated fan per deck — each deck is its own single-duct unit.
+      const capFracHot = fanWallCapacityFraction(sim.hotDeckFans);
+      const filterDerate = activeFaults.hotDeckDirtyFilter ? 0.75 : 1;
+      sim.supplyCfm = sim.supplyCfm * (sim.coldDeckDamperPos/100);
+      sim.hotDeckCfm = (hdStartCmd ? (sp.maxCfmSP / 2)*(sim.hotDeckFanPct/100)*capFracHot*filterDerate*(0.97+0.06*Math.random())*flowDegradation : 0) * (sim.hotDeckDamperPos/100);
+    } else {
+      // Single-source (shared fan) dual duct: one fan feeds both decks. When a
+      // deck damper closes while the fan is running, its share is pushed onto
+      // the deck that is still open — that deck's CFM and duct static rise
+      // instead of the airflow being lost. If both close, flow stops and the
+      // running fan pressurizes the common duct (see spBefore / HI-PRS trip).
+      const coldF = sim.coldDeckDamperPos/100, hotF = sim.hotDeckDamperPos/100;
+      const fanOut = sim.supplyCfm; // fan output before the deck dampers
+      const coldClosed = coldF < 0.15, hotClosed = hotF < 0.15;
+      if(coldClosed && hotClosed){ sim.supplyCfm = 0; sim.hotDeckCfm = 0; }
+      else if(coldClosed){ sim.supplyCfm = 0; sim.hotDeckCfm = fanOut; }
+      else if(hotClosed){ sim.supplyCfm = fanOut; sim.hotDeckCfm = 0; }
+      else { sim.supplyCfm = fanOut * coldF; sim.hotDeckCfm = fanOut * hotF; }
+    }
   } else { sim.coldDeckDamperPos = 0; sim.hotDeckDamperPos = 0; }
+
+  // Main-duct static pressure sensor — sits BEFORE the supply output dampers
+  // (supply duct damper, cold/hot deck dampers, VAV primary dampers). While a
+  // path stays open it reads normal duct static; as the last of the output
+  // dampers close the running fan pressurizes the duct and this reading climbs
+  // until the high-static detector trips and shuts the unit down.
+  const hasIndependentDual = config.ductType==='dual' && config.dualDuctIndependent;
+  if(hasIndependentDual){
+    sim.spBefore = 0; sim.spBeforeDisplay = 0;
+  } else {
+    let openArea = 1;
+    if(config.ductType==='dual'){ openArea = clamp((sim.coldDeckDamperPos + sim.hotDeckDamperPos)/100, 0, 1); }
+    else if(config.driveType==='starter'){ openArea = clamp(sim.supplyDamperPos/100, 0, 1); }
+    else if(sim.vav && sim.vav.length){
+      const openDps = sim.vav.filter(b => b.type!=='fcu' && b.damperPos !== undefined).map(b => b.damperPos);
+      if(openDps.length) openArea = clamp((openDps.reduce((a,b)=>a+b,0) / openDps.length)/100, 0, 1);
+    }
+
+    // Pressurization only happens when the supply output dampers are commanded
+    // shut while the fan keeps running — never during a normal start-up while
+    // the dampers are still opening.
+    let cmdClosed = false;
+    if(config.ductType==='dual'){
+      const cc = sim.overrideColdDamper ? (sim.overrideColdDamperVal || 0) : (activeFaults.coldDeckDamperStuck !== undefined ? activeFaults.coldDeckDamperStuck : (wantRunCold ? 92 : 0));
+      const hc = sim.overrideHotDamper ? (sim.overrideHotDamperVal || 0) : (activeFaults.hotDeckDamperStuck !== undefined ? activeFaults.hotDeckDamperStuck : (wantRunHot ? 92 : 0));
+      cmdClosed = cc < 20 && hc < 20;
+    } else if(config.driveType==='starter'){
+      const sc = sim.overrideSupplyDamper ? (sim.overrideSupplyDamperVal || 0) : (activeFaults.supplyDamperStuck !== undefined ? activeFaults.supplyDamperStuck : 100);
+      cmdClosed = sc < 20;
+    } else if(sim.vav && sim.vav.length){
+      cmdClosed = sim.vav.every((b, i) => b.type !== 'fcu' &&
+        (activeFaults['vavPowerLost' + (i+1)] || (activeFaults['vavDamperStuck' + (i+1)] !== undefined && activeFaults['vavDamperStuck' + (i+1)] < 20)));
+    }
+    const baseStatic = clamp(sim.staticPressure || 0, 0, sp.highStaticSP*0.9);
+    const restFrac = clamp((0.25 - openArea) / 0.25, 0, 1); // 1 = dampers actually shut, 0 once ~1/4 of the path is open
+    const spTarget = wantRunCold ? baseStatic + (cmdClosed ? 4.6*Math.pow(restFrac, 1.3) : 0) : 0;
+    sim.spBefore = clamp(slew(sim.spBefore || 0, spTarget, 0.4), 0, sp.highStaticSP + 2);
+    sim.spBeforeDisplay = activeFaults.staticPressureSensorDrift ? Math.max(0, sim.spBefore - 0.6) : sim.spBefore;
+  }
+
+  // Downstream deck static (sensors AFTER the deck dampers, ~2/3 down the
+  // duct): tracks how much flow each deck is actually moving, so a deck that
+  // inherits the other deck's airflow reads higher static.
+  if(config.ductType==='dual'){
+    const deckDesign = Math.max(sp.maxCfmSP / 2, 1);
+    const coldFlowRat = clamp(sim.supplyCfm / deckDesign, 0, 2);
+    const hotFlowRat  = clamp((sim.hotDeckCfm || 0) / deckDesign, 0, 2);
+    const spBase23 = sim.sp23 !== undefined ? sim.sp23 : sp.highStaticSP * 0.9;
+    sim.sp23Cold = clamp(spBase23 * (0.3 + 0.7 * coldFlowRat), 0, sp.highStaticSP);
+    sim.sp23Hot  = clamp(spBase23 * (0.3 + 0.7 * hotFlowRat),  0, sp.highStaticSP);
+  }
 
   const wantRunReturn = wantRunCold || wantRunHot;
   if(config.airSystem!=='oa100'){
@@ -780,7 +852,8 @@ function tick(){
     latched.freezestat = true;
     freezestatRecovering = true;
   }
-  if(sim.staticPressure > sp.highStaticSP && wantRunCold) latched.highStatic = true;
+  if(sim.spBefore > sp.highStaticSP && wantRunCold) latched.highStatic = true;
+  if(hasIndependentDual && sim.staticPressure > sp.highStaticSP && wantRunCold) latched.highStatic = true;
   if(config.preheat && config.preheatAquastat && sim.preheatWaterTemp < sp.aquastatSP && wantRunCold) latched.aquastat = true;
   if(independentHotDeck){
     if(config.includeOa && sim.hotDeckTemp < sp.freezestatSP && wantRunHot) latched.hotFreezestat = true;

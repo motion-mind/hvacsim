@@ -475,6 +475,16 @@ function buildSchematicCore(){
     }
   }
 
+  if(!independent){
+    const sf = items.find(it => it.id === 'supplyfan');
+    if(sf){
+      const spbX = sf.cx + sf.w/2 + 34;
+      s += '<g id="readout_spBefore"></g>';
+      window._schemSpBeforeX = spbX;
+      window._schemSpBeforeY = coldY;
+    } else { window._schemSpBeforeX = undefined; }
+  } else { window._schemSpBeforeX = undefined; }
+
   svg.innerHTML = s;
   window._schemItems = items;
   window._schemHotItems = hotItems;
@@ -673,21 +683,31 @@ function updateSchematicReadouts(){
 
   // Static pressure: main duct shows actual supply static, 2/3 stub shows simulated 2/3 value
   const sp23 = sim.sp23 !== undefined ? sim.sp23 : sp.highStaticSP * 0.9;
-  const sp23Str = fmt(sp23, 2);
+  const coldOrMainSpStr = fmt(config.ductType==='dual' ? (sim.sp23Cold !== undefined ? sim.sp23Cold : sp23) : sp23, 2);
+  const hotSpStr = fmt(sim.sp23Hot !== undefined ? sim.sp23Hot : sp23, 2);
   const spStubMainEl = document.getElementById('readout_spStubMain');
   if(spStubMainEl && window._schemSpStubMainCx !== undefined){
     spStubMainEl.innerHTML = bubble(window._schemSpStubMainCx, window._schemSpStubMainY-30, 45, 'SP (2/3 Duct)', 
-      [sp23Str+'" w.c.'], null, 0);
+      [coldOrMainSpStr+'" w.c.'], null, 0);
   }
   const spStubColdEl = document.getElementById('readout_spStubCold');
   if(spStubColdEl && window._schemSpStubColdCx !== undefined){
     spStubColdEl.innerHTML = bubble(window._schemSpStubColdCx, window._schemSpStubColdY-30, 45, 'SP (2/3 Duct)', 
-      [sp23Str+'" w.c.'], null, 0);
+      [coldOrMainSpStr+'" w.c.'], null, 0);
   }
   const spStubHotEl = document.getElementById('readout_spStubHot');
   if(spStubHotEl && window._schemSpStubHotCx !== undefined){
     spStubHotEl.innerHTML = bubbleDown(window._schemSpStubHotCx, window._schemSpStubHotY + 30, 45, 'SP (2/3 Duct)', 
-      [sp23Str+'" w.c.'], null, 0);
+      [hotSpStr+'" w.c.'], null, 0);
+  }
+
+  // Pre-damper (main duct) static pressure — upstream of the supply output dampers.
+  const spBeforeEl = document.getElementById('readout_spBefore');
+  if(spBeforeEl && window._schemSpBeforeX !== undefined){
+    const spbV = sim.spBeforeDisplay !== undefined ? sim.spBeforeDisplay : (sim.spBefore || 0);
+    const spbTrip = spbV > sp.highStaticSP;
+    spBeforeEl.innerHTML = bubble(window._schemSpBeforeX, window._schemSpBeforeY-48, 34, 'Main Duct SP (Before Output Dampers)',
+      [fmt(spbV, 2)+'" w.c.'], spbTrip ? '#e5484d' : '#4fd1c5', 0);
   }
 
   // High static trip indicators
