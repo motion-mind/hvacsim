@@ -791,17 +791,38 @@ function tick(){
   if(hasIndependentDual){
     sim.spBefore = 0; sim.spBeforeDisplay = 0;
   } else {
-    let openArea = 1;
-    if(config.ductType==='dual'){ openArea = clamp((sim.coldDeckDamperPos + sim.hotDeckDamperPos)/100, 0, 1); }
-    else if(config.driveType==='starter'){ openArea = clamp(sim.supplyDamperPos/100, 0, 1); }
-    else if(sim.vav && sim.vav.length){
-      const openDps = sim.vav.filter(b => b.type!=='fcu' && b.damperPos !== undefined).map(b => b.damperPos);
-      if(openDps.length) openArea = clamp((openDps.reduce((a,b)=>a+b,0) / openDps.length)/100, 0, 1);
+    // How much of the fan's rated throughput the downstream will actually take
+    // right now (0 = fully blocked, 1 = free-flowing). VAV box demand is
+    // included, so a deck whose boxes are all shut counts as closed even when
+    // its deck damper is still open.
+    let rawOpen = 1;
+    if(config.ductType==='dual'){
+      const deckRef = Math.max(sp.maxCfmSP / 2, 1);
+      let cdem = 1, hdem = 1; // no VAV boxes => constant-volume, equal demand
+      if(sim.vav && sim.vav.length){
+        cdem = 0; hdem = 0;
+        sim.vav.forEach(b => {
+          if(b.type !== 'fcu'){
+            if(b.coldDamperPos !== undefined) cdem += (b.designCfm || 0) * (b.coldDamperPos/100);
+            if(b.hotDamperPos  !== undefined) hdem += (b.designCfm || 0) * (b.hotDamperPos/100);
+          }
+        });
+        cdem = cdem / deckRef; hdem = hdem / deckRef;
+      }
+      rawOpen = clamp((sim.coldDeckDamperPos/100) * Math.max(0, cdem) + (sim.hotDeckDamperPos/100) * Math.max(0, hdem), 0, 1);
+    } else if(config.driveType==='starter'){
+      rawOpen = clamp(sim.supplyDamperPos/100, 0, 1);
+    } else if(sim.vav && sim.vav.length){
+      const openDps = sim.vav.filter(b => b.type !== 'fcu' && b.damperPos !== undefined).map(b => b.damperPos);
+      rawOpen = openDps.length ? clamp((openDps.reduce((a,b)=>a+b,0) / openDps.length)/100, 0, 1) : 1;
     }
 
-    // Pressurization only happens when the supply output dampers are commanded
-    // shut while the fan keeps running — never during a normal start-up while
-    // the dampers are still opening.
+    // Pressurization happens when the supply output dampers are commanded shut
+    // while the fan keeps running, OR when the fan is deadheading against a
+    // path that can barely accept any airflow (motor at speed, delivered CFM
+    // collapsed because every box is shut). The deadhead branch needs a few
+    // seconds of a sustained stall so a normal start-up — where dampers/boxes
+    // are simply still opening — never nuisance-pressurizes or trips.
     let cmdClosed = false;
     if(config.ductType==='dual'){
       const cc = sim.overrideColdDamper ? (sim.overrideColdDamperVal || 0) : (activeFaults.coldDeckDamperStuck !== undefined ? activeFaults.coldDeckDamperStuck : (wantRunCold ? 92 : 0));
@@ -814,9 +835,15 @@ function tick(){
       cmdClosed = sim.vav.every((b, i) => b.type !== 'fcu' &&
         (activeFaults['vavPowerLost' + (i+1)] || (activeFaults['vavDamperStuck' + (i+1)] !== undefined && activeFaults['vavDamperStuck' + (i+1)] < 20)));
     }
+    let deadhead = false;
+    if(wantRunCold && sim.supplyFanPct > 55 && rawOpen < 0.08){
+      sim.deadheadTimer = (sim.deadheadTimer || 0) + DT;
+      if(sim.deadheadTimer > 6) deadhead = true;
+    } else { sim.deadheadTimer = 0; }
     const baseStatic = clamp(sim.staticPressure || 0, 0, sp.highStaticSP*0.9);
-    const restFrac = clamp((0.25 - openArea) / 0.25, 0, 1); // 1 = dampers actually shut, 0 once ~1/4 of the path is open
-    const spTarget = wantRunCold ? baseStatic + (cmdClosed ? 4.6*Math.pow(restFrac, 1.3) : 0) : 0;
+    const restFrac = clamp((0.25 - rawOpen) / 0.25, 0, 1); // 1 = effectively shut
+    const pressurize = cmdClosed || deadhead;
+    const spTarget = wantRunCold ? baseStatic + (pressurize ? 4.6*Math.pow(restFrac, 1.3) : 0) : 0;
     sim.spBefore = clamp(slew(sim.spBefore || 0, spTarget, 0.4), 0, sp.highStaticSP + 2);
     sim.spBeforeDisplay = activeFaults.staticPressureSensorDrift ? Math.max(0, sim.spBefore - 0.6) : sim.spBefore;
   }
