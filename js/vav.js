@@ -204,7 +204,7 @@ function renderVavBoxGrid(){
     const n = i+1;
     let rows = '';
     rows += '<div class="vrow"><span>Zone Temp</span><span class="vval" id="vavZoneTemp'+n+'"></span></div>';
-    rows += '<div class="vrow"><span>Setpoint</span><span class="vval"><input type="number" step="0.1" value="'+box.zoneSP+'" data-vavbox="'+n+'"></span></div>';
+    rows += '<div class="vrow"><span>Setpoint</span><span class="vval"><input type="number" step="0.1" value="'+fmt(box.zoneSP,1)+'" data-vavbox="'+n+'"></span></div>';
     if(box.type === 'or' || box.type === 'pr'){ rows += '<div class="vrow"><span>Zone Humidity</span><span class="vval" id="vavZoneHumid'+n+'"></span></div>'; rows += '<div class="vrow"><span>Effective SP</span><span class="vval" id="vavEffSP'+n+'"></span></div>'; }
     if(box.type === 'fcu'){
       rows += '<div class="vrow"><span>Local Fan</span><span class="vval" id="fcuFanSpeed'+n+'"></span></div>';
