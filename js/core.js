@@ -50,6 +50,7 @@ function rnd(min,max){return min+Math.random()*(max-min);}
 class PID{
   constructor(kp,ki,kd,min,max){this.kp=kp;this.ki=ki;this.kd=kd;this.min=min;this.max=max;this.integral=0;this.prevErr=0;this.first=true;}
   update(sp,pv,dt,reverse){
+    if(!isFinite(sp) || !isFinite(pv) || !isFinite(dt)){ this.reset(); return this.min; }
     let err = reverse ? (pv-sp) : (sp-pv);
     this.integral += err*dt;
     const span = (this.max-this.min);

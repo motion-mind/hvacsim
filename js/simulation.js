@@ -84,6 +84,7 @@ function buildSimState(){
     oaDamperPos:0, raDamperPos:100, fireDamperPos:0, supplyDamperPos:0, eaDamperPos:0, exhaustCfm:0,
     coldDeckDamperPos:0, hotDeckDamperPos:0,
     spBefore:0, spBeforeDisplay:0, sp23Cold:0, sp23Hot:0,
+    staticPressureDisplay:0, staticFb2of3:0,
     hotOaDamperPos:0, hotRaDamperPos:100, hotOaCfm:0, hotMaTemp:72,
     supplyFanPct:0, returnFanPct:0, hotDeckFanPct:0,
     boosterPumpRun:false, preheatWaterTemp:WATER.phw, hotDeckCfm:0,
@@ -672,7 +673,7 @@ function tick(){
       const cfmSP = sharedDual ? sp.supplyCfmSP : (config.ductType==='dual' ? sp.supplyCfmSP / 2 : sp.supplyCfmSP);
       const fb = sharedDual ? ((sim.supplyCfm || 0) + (sim.hotDeckCfm || 0)) : sim.supplyCfm;
       outPct = sim.pid.supplyFlow.update(cfmSP, fb, DT, false);
-    } else { outPct = sim.pid.staticP.update(sp.staticSP, sim.staticPressureDisplay, DT, false); }
+    } else { outPct = sim.pid.staticP.update(sp.staticSP, (sim.staticFb2of3 !== undefined ? sim.staticFb2of3 : sim.staticPressureDisplay), DT, false); }
     let targetPct = sfStartCmd ? (sim.overrideSupplyFanSpeed ? sim.overrideSupplyFanSpeedVal : clamp(Math.max(outPct,25),25,100)) : 0;
     if(isWireDisconnected('Supply Fan Drive Speed Command')) targetPct = 0;
     sim.supplyFanPct = slew(sim.supplyFanPct, targetPct, 100 / 120);
@@ -689,7 +690,7 @@ function tick(){
       const cfmSP = sharedDual ? sp.supplyCfmSP : (config.ductType==='dual' ? sp.supplyCfmSP / 2 : sp.supplyCfmSP);
       const fb = sharedDual ? ((sim.supplyCfm || 0) + (sim.hotDeckCfm || 0)) : sim.supplyCfm;
       damperOut = sim.pid.supplyDamper.update(cfmSP, fb, DT, false);
-    } else { damperOut = sim.pid.supplyDamper.update(sp.staticSP, sim.staticPressureDisplay, DT, false); }
+    } else { damperOut = sim.pid.supplyDamper.update(sp.staticSP, (sim.staticFb2of3 !== undefined ? sim.staticFb2of3 : sim.staticPressureDisplay), DT, false); }
     let damperTarget = sim.overrideSupplyDamper ? (sim.overrideSupplyDamperVal || 0) : (sfStartCmd ? damperOut : 0);
     if(isWireDisconnected('Supply Duct Damper Actuator Command')) damperTarget = 0;
     sim.supplyDamperPos = slew(sim.supplyDamperPos, damperTarget, DAMPER_SLEW);
@@ -725,10 +726,32 @@ function tick(){
   }
   if(sim.sp23Base === undefined) sim.sp23Base = 1 + Math.random() * 1.5;
   if(wantRun){
-    const t = sim.age || 0;
-    const fluct23 = 0.08 * Math.sin(t * 0.06) + 0.05 * Math.sin(t * 0.14);
-    const driveFrac = config.driveType==='vfd' ? (sim.supplyFanPct/100) : (sim.supplyDamperPos/100);
-    sim.sp23 = clamp(driveFrac * (sim.sp23Base + fluct23), 0, 3);
+    if(config.controlType === 'static'){
+      // The 2/3-duct static sensor IS the feedback for static-pressure
+      // control. It reads duct static that rises both with fan output and with
+      // downstream restriction (VAV terminals / deck dampers closing), so the
+      // controller can actually trim the fan to hold the SP setpoint.
+      const driveFrac = config.driveType==='vfd' ? (sim.supplyFanPct/100) : (sim.supplyDamperPos/100);
+      let openFrac = 1; // fraction of downstream path the terminals accept
+      if(sim.vav && sim.vav.length){
+        const dps = sim.vav.filter(b => b.type !== 'fcu').map(b => {
+          if(config.ductType === 'dual'){
+            const c = b.coldDamperPos !== undefined ? b.coldDamperPos : VAV_MIN_PCT;
+            const h = b.hotDamperPos !== undefined ? b.hotDamperPos : 0;
+            return (c + h) / 200;
+          }
+          return (b.damperPos !== undefined ? b.damperPos : VAV_MIN_PCT) / 100;
+        });
+        if(dps.length) openFrac = clamp(dps.reduce((a,b)=>a+b,0) / dps.length, VAV_MIN_PCT/100, 1);
+      }
+      const resist = 1 + 0.9 * clamp((1 - openFrac) / 0.85, 0, 1); // 1 open ... ~1.9 all throttled
+      sim.sp23 = clamp(driveFrac * sp.highStaticSP * 0.9 * resist, 0, sp.highStaticSP);
+    } else {
+      const t = sim.age || 0;
+      const fluct23 = 0.08 * Math.sin(t * 0.06) + 0.05 * Math.sin(t * 0.14);
+      const driveFrac = config.driveType==='vfd' ? (sim.supplyFanPct/100) : (sim.supplyDamperPos/100);
+      sim.sp23 = clamp(driveFrac * (sim.sp23Base + fluct23), 0, 3);
+    }
   } else { sim.sp23 = 0; }
 
   if(config.ductType==='dual'){
@@ -864,6 +887,23 @@ function tick(){
     const spBase23 = sim.sp23 !== undefined ? sim.sp23 : sp.highStaticSP * 0.9;
     sim.sp23Cold = clamp(spBase23 * (0.3 + 0.7 * coldFlowRat), 0, sp.highStaticSP);
     sim.sp23Hot  = clamp(spBase23 * (0.3 + 0.7 * hotFlowRat),  0, sp.highStaticSP);
+  }
+
+  // Feedback for static-pressure control is the 2/3-duct static reading shown
+  // on the diagram: single-duct uses its 2/3 sensor; a shared-fan dual duct
+  // averages the cold & hot deck sensors; independent dual controls the cold
+  // deck on its own deck sensor.
+  if(config.controlType === 'static'){
+    const spBase = sim.sp23 !== undefined ? sim.sp23 : 0;
+    if(config.ductType === 'dual'){
+      const cd = sim.sp23Cold !== undefined ? sim.sp23Cold : spBase;
+      const hd = sim.sp23Hot !== undefined ? sim.sp23Hot : spBase;
+      sim.staticFb2of3 = config.dualDuctIndependent ? cd : ((cd + hd) / 2);
+    } else {
+      sim.staticFb2of3 = spBase;
+    }
+  } else {
+    sim.staticFb2of3 = sim.staticPressureDisplay;
   }
 
   const wantRunReturn = wantRunCold || wantRunHot;
