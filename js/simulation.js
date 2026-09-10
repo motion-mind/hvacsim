@@ -221,6 +221,11 @@ function tick(){
   // model by that small fraction, and their closure never starves the AHU.
   const VAV_MODEL_SHARE = 0.10;
   const blendVav = (frac) => (1 - VAV_MODEL_SHARE) + VAV_MODEL_SHARE * clamp(frac, 0, 2);
+  // Seasonal deck demand: the hot deck is barely used once it's warm outside
+  // (falls off above 80F), and the cold deck is barely used when it's cold
+  // outside (falls off at/below 45F).
+  const hotDeckDemandFactor  = clamp((95 - sim.oat) / 15, 0.05, 1);
+  const coldDeckDemandFactor = clamp((sim.oat - 30) / 15, 0.05, 1);
   // VFD fans ramp 0-100% over the configured ramp time (30-120 s); non-VFD
   // starter fans reach full speed in 5 s (20 %/s).
   const fanRampSlew = 100 / clamp(sp.rampTimeSP || 60, 30, 120);
@@ -801,8 +806,11 @@ function tick(){
             if(b.hotDamperPos  !== undefined) hotDem  += (b.designCfm || 0) * (b.hotDamperPos/100);
           }
         });
-        coldDem = blendVav(coldDem / deckRef);
-        hotDem  = blendVav(hotDem  / deckRef);
+        coldDem = blendVav(coldDem / deckRef) * coldDeckDemandFactor;
+        hotDem  = blendVav(hotDem  / deckRef) * hotDeckDemandFactor;
+      } else {
+        coldDem *= coldDeckDemandFactor;
+        hotDem  *= hotDeckDemandFactor;
       }
       const coldPath = coldF * Math.max(0, coldDem);
       const hotPath  = hotF  * Math.max(0, hotDem);
@@ -854,7 +862,11 @@ function tick(){
             if(b.hotDamperPos  !== undefined) hdem += (b.designCfm || 0) * (b.hotDamperPos/100);
           }
         });
-        cdem = blendVav(cdem / deckRef); hdem = blendVav(hdem / deckRef);
+        cdem = blendVav(cdem / deckRef) * coldDeckDemandFactor;
+        hdem = blendVav(hdem / deckRef) * hotDeckDemandFactor;
+      } else {
+        cdem *= coldDeckDemandFactor;
+        hdem *= hotDeckDemandFactor;
       }
       rawOpen = clamp((sim.coldDeckDamperPos/100) * Math.max(0, cdem) + (sim.hotDeckDamperPos/100) * Math.max(0, hdem), 0, 1);
     } else if(config.driveType==='starter'){
