@@ -212,6 +212,12 @@ function tick(){
   const age = sim.age || 0;
   const ageLossPct = getAgeLoss(age);
   const coilEff = 0.85 * (1 - (ageLossPct / 100) * 0.35);
+  // The displayed VAV boxes represent only a small sample (<=10%) of the boxes
+  // the AHU actually serves; the rest are unseen (other zones / common areas)
+  // and are assumed to stay open and loaded. So the shown boxes only bias the
+  // model by that small fraction, and their closure never starves the AHU.
+  const VAV_MODEL_SHARE = 0.10;
+  const blendVav = (frac) => (1 - VAV_MODEL_SHARE) + VAV_MODEL_SHARE * clamp(frac, 0, 2);
   let drift = 0;
   if(age >= 10){ drift = Math.sin(window.simTickCount * 0.05) * 4; }
 
@@ -742,7 +748,7 @@ function tick(){
           }
           return (b.damperPos !== undefined ? b.damperPos : VAV_MIN_PCT) / 100;
         });
-        if(dps.length) openFrac = clamp(dps.reduce((a,b)=>a+b,0) / dps.length, VAV_MIN_PCT/100, 1);
+        if(dps.length) openFrac = clamp(blendVav(dps.reduce((a,b)=>a+b,0) / dps.length), 0, 1);
       }
       const resist = 1 + 0.9 * clamp((1 - openFrac) / 0.85, 0, 1); // 1 open ... ~1.9 all throttled
       sim.sp23 = clamp(driveFrac * sp.highStaticSP * 0.9 * resist, 0, sp.highStaticSP);
@@ -788,8 +794,8 @@ function tick(){
             if(b.hotDamperPos  !== undefined) hotDem  += (b.designCfm || 0) * (b.hotDamperPos/100);
           }
         });
-        coldDem = coldDem / deckRef;
-        hotDem  = hotDem  / deckRef;
+        coldDem = blendVav(coldDem / deckRef);
+        hotDem  = blendVav(hotDem  / deckRef);
       }
       const coldPath = coldF * Math.max(0, coldDem);
       const hotPath  = hotF  * Math.max(0, hotDem);
@@ -841,14 +847,14 @@ function tick(){
             if(b.hotDamperPos  !== undefined) hdem += (b.designCfm || 0) * (b.hotDamperPos/100);
           }
         });
-        cdem = cdem / deckRef; hdem = hdem / deckRef;
+        cdem = blendVav(cdem / deckRef); hdem = blendVav(hdem / deckRef);
       }
       rawOpen = clamp((sim.coldDeckDamperPos/100) * Math.max(0, cdem) + (sim.hotDeckDamperPos/100) * Math.max(0, hdem), 0, 1);
     } else if(config.driveType==='starter'){
       rawOpen = clamp(sim.supplyDamperPos/100, 0, 1);
     } else if(sim.vav && sim.vav.length){
       const openDps = sim.vav.filter(b => b.type !== 'fcu' && b.damperPos !== undefined).map(b => b.damperPos);
-      rawOpen = openDps.length ? clamp((openDps.reduce((a,b)=>a+b,0) / openDps.length)/100, 0, 1) : 1;
+      rawOpen = openDps.length ? clamp(blendVav((openDps.reduce((a,b)=>a+b,0) / openDps.length)/100), 0, 1) : 1;
     }
 
     // Pressurization happens when the supply output dampers are commanded shut
