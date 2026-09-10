@@ -301,6 +301,9 @@ function renderSafeties(){
     return '<div class="safety-chip"><span class="dot '+(tripped?'trip':'on')+'"></span><span class="lbl">'+label+': <b style="color:'+(tripped?'var(--red)':'var(--green)')+'">'+(tripped?'TRIPPED':'NORMAL')+'</b></span>'+(resettable && tripped? '<button data-reset="'+resetFn+'">Reset</button>':'')+'</div>';
   }
   let html = '';
+  if(config.includeOa && !config.preheat && sim.oaColdLockout){
+    html += '<div class="safety-chip" style="border-color:var(--amber);"><span class="dot warn"></span><span class="lbl">\u26a0 Low Outside Air Lockout: no preheat coil and OAT \u2264 35\u00b0F \u2014 outside air damper commanded closed.</span></div>';
+  }
   if(config.includeOa){
     const isInd = config.ductType==='dual' && config.dualDuctIndependent;
     html += chip(isInd ? 'Low Temp Detector, Cold Deck' : 'Low Temp Detector', latched.freezestat, true, 'freezestat');

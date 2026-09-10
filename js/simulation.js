@@ -87,7 +87,7 @@ function buildSimState(){
     oaDamperPos:0, raDamperPos:100, fireDamperPos:0, supplyDamperPos:0, eaDamperPos:0, exhaustCfm:0,
     coldDeckDamperPos:0, hotDeckDamperPos:0,
     spBefore:0, spBeforeDisplay:0, sp23Cold:0, sp23Hot:0, spDeckCold:0, spDeckHot:0,
-    staticPressureDisplay:0, staticFb2of3:0,
+    staticPressureDisplay:0, staticFb2of3:0, oaColdLockout:false,
     hotOaDamperPos:0, hotRaDamperPos:100, hotOaCfm:0, hotMaTemp:72,
     supplyFanPct:0, returnFanPct:0, hotDeckFanPct:0,
     boosterPumpRun:false, preheatWaterTemp:WATER.phw, hotDeckCfm:0,
@@ -238,6 +238,13 @@ function tick(){
   sim.oaRH = slew(sim.oaRH, sim.oaRHTarget, 1 / 120);
   sim.age = slew(sim.age, sim.ageTarget, 50 / 120);
 
+  // A unit with no preheat coil must protect itself by closing the outside-air
+  // damper when it's at/below 35F (a warning is surfaced in the Safeties
+  // panel). With a preheat coil installed, the freezestat handles this instead.
+  const oaLockoutEligible = config.includeOa && config.airSystem !== 'oa100' && !config.preheat;
+  const noPreheatOaLockout = oaLockoutEligible && (sim.oaColdLockout ? sim.oat <= 37 : sim.oat <= 35); // 2F hysteresis
+  sim.oaColdLockout = noPreheatOaLockout;
+
   const fireAlarm = manualSafety.fireAlarm;
   const smokeDamperProven = !manualSafety.smokeDamperFail;
   const doorClosed = !manualSafety.doorOpen;
@@ -350,6 +357,8 @@ function tick(){
     if(pathWantRun && config.includeOa && !isOaDisc && !o.isEconActive){
       oaDamperTargetPos = clamp(oaDamperTargetPos + drift, minOaDmp, 100);
     }
+    // No-preheat low-OA lockout: force the outside-air damper shut.
+    if(noPreheatOaLockout) oaDamperTargetPos = 0;
     const oaDamperPos = slew(o.curOaDamperPos, oaDamperTargetPos, DAMPER_SLEW);
     const isFreezestatTripped = isHotDeck ? latched.hotFreezestat : latched.freezestat;
     let raDamperTargetPos;
@@ -464,6 +473,7 @@ function tick(){
       targetOaFrac = clamp(targetOaFrac, 0, 1);
       econTargetFlow = Math.max(sp.oaCfmSP, targetOaFrac * Math.max(sim.supplyCfm, 1));
     }
+    if(noPreheatOaLockout) econActive = false; // OA must stay shut
     sim.economizerActive = econActive;
     // Independent dual duct: each deck gets its own OA intake, split the minimum equally
     const oaSetpoint = independentHotDeck ? Math.max(econTargetFlow / 2, 200) : econTargetFlow;
@@ -982,7 +992,7 @@ function tick(){
   } else if(freezestatRecovering && freezeSensedTemp > sp.freezestatSP + 2){
     freezestatRecovering = false;
   }
-  if(config.includeOa && freezeSensedTemp < sp.freezestatSP && wantRunCold && !freezestatRecovering){
+  if(config.includeOa && !noPreheatOaLockout && freezeSensedTemp < sp.freezestatSP && wantRunCold && !freezestatRecovering){
     latched.freezestat = true;
     freezestatRecovering = true;
   }
