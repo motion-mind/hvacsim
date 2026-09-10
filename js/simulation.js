@@ -64,6 +64,7 @@ function getAhuBaseEfficiency(oat, oaRH, hasVfd){
 }
 
 function buildSimState(){
+  if(config.airSystem==='oa100') config.preheat = true; // 100% OA units always need preheat
   config.supplyFan = config.supplyFanCount > 1 ? 'wall' : 'single';
   if(config.airSystem==='oa100'){ config.returnFanCount = 1; }
   config.returnFan = config.returnFanCount > 1 ? 'wall' : 'single';
@@ -87,7 +88,7 @@ function buildSimState(){
     oaDamperPos:0, raDamperPos:100, fireDamperPos:0, supplyDamperPos:0, eaDamperPos:0, exhaustCfm:0,
     coldDeckDamperPos:0, hotDeckDamperPos:0,
     spBefore:0, spBeforeDisplay:0, sp23Cold:0, sp23Hot:0, spDeckCold:0, spDeckHot:0,
-    staticPressureDisplay:0, staticFb2of3:0, oaColdLockout:false,
+    staticPressureDisplay:0, staticFb2of3:0, oaColdLockout:false, freezeLowTimer:0,
     hotOaDamperPos:0, hotRaDamperPos:100, hotOaCfm:0, hotMaTemp:72,
     supplyFanPct:0, returnFanPct:0, hotDeckFanPct:0,
     boosterPumpRun:false, preheatWaterTemp:WATER.phw, hotDeckCfm:0,
@@ -383,7 +384,9 @@ function tick(){
     let effectiveOat = sim.oat;
     if(sim.oat < 38){
       const diff = 38 - sim.oat;
-      effectiveOat -= 1.2 * Math.pow(diff, 1.05);
+      // Cold-OA penalty (wind/stratification), capped so entering air stays
+      // physically plausible and preheat can actually protect the coil.
+      effectiveOat -= Math.min(8, 1.2 * Math.pow(diff, 1.05));
     }
     const maTemp = effectiveOat*oaFraction + sim.raTemp*(1-oaFraction);
     const Woa = humidityRatio(sim.oat, sim.oaRH);
@@ -407,6 +410,10 @@ function tick(){
         }
       }
       let preheatCmd = (pathWantRun || latched.freezestat) ? valve : 0;
+      // Low-limit / freezestat protect: if entering air is at/below the
+      // freezestat setpoint, drive the preheat valve fully open immediately
+      // (before the PI loop can ramp) so the coil can protect itself.
+      if(pathWantRun && maTemp < sp.freezestatSP) preheatCmd = 100;
       if(isWireDisconnected('Preheat Valve Actuator Command')) preheatCmd = 0;
       if(pathWantRun && age >= 10 && !isWireDisconnected('Preheat Valve Actuator Command')){
         preheatCmd = clamp(preheatCmd + drift, 0, 100);
@@ -427,7 +434,9 @@ function tick(){
     let effectiveOat = sim.oat;
     if(sim.oat < 38){
       const diff = 38 - sim.oat;
-      effectiveOat -= 1.2 * Math.pow(diff, 1.05);
+      // Cold-OA penalty (wind/stratification), capped so entering air stays
+      // physically plausible and preheat can actually protect the coil.
+      effectiveOat -= Math.min(8, 1.2 * Math.pow(diff, 1.05));
     }
     sim.raTemp = NaN; sim.maTemp = effectiveOat;
     oaFraction = 1;
@@ -442,6 +451,8 @@ function tick(){
       }
       let preheatCmd = wantRun? valve : 0;
       if(latched.freezestat) preheatCmd = 100;
+      // Low-limit protect on 100% OA: entering air is the outdoor air.
+      if(wantRun && sim.maTemp < sp.freezestatSP) preheatCmd = 100;
       if(isWireDisconnected('Preheat Valve Actuator Command')) preheatCmd = 0;
       sim.preheatValve = slew(sim.preheatValve, preheatCmd, 6);
       const noFlow = activeFaults.preheatNoFlow || (config.preheatBoosterPump && activeFaults.boosterPumpFail);
@@ -993,8 +1004,12 @@ function tick(){
     freezestatRecovering = false;
   }
   if(config.includeOa && !noPreheatOaLockout && freezeSensedTemp < sp.freezestatSP && wantRunCold && !freezestatRecovering){
-    latched.freezestat = true;
-    freezestatRecovering = true;
+    // Low-limit time delay: a real freezestat allows the preheat valve time to
+    // stroke open before it latches the unit off.
+    sim.freezeLowTimer = (sim.freezeLowTimer || 0) + DT;
+    if(sim.freezeLowTimer >= 10){ latched.freezestat = true; freezestatRecovering = true; }
+  } else {
+    sim.freezeLowTimer = 0;
   }
   if(sim.spBefore > sp.highStaticSP && wantRunCold) latched.highStatic = true;
   if(hasIndependentDual && sim.staticPressure > sp.highStaticSP && wantRunCold) latched.highStatic = true;

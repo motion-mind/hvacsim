@@ -422,6 +422,7 @@ document.getElementById('btnRandomizeCfg').addEventListener('click', ()=>{
   config.ductType = pick(['single','dual']);
   config.dualDuctIndependent = config.ductType==='dual'? Math.random()<0.4 : false;
   config.preheat = Math.random()<0.7;
+  if(config.airSystem==='oa100') config.preheat = true; // 100% OA always has preheat
   config.coolingCoils = config.ductType==='dual'? 'single' : pick(['single','dual']);
   config.reheat = config.ductType==='dual'? false : Math.random()<0.6;
   config.steamHumid = config.ductType==='dual'? false : Math.random()<0.35;
