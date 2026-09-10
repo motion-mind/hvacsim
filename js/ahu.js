@@ -147,6 +147,7 @@ function renderSetpoints(){
   }
 
   row('Maximum AHU Supply Air CFM Rating','maxCfmSP','cfm',100);
+  if(config.driveType==='vfd') row('Fan Ramp Time to Full Speed (Ramp Speed)','rampTimeSP','sec',5);
   if(config.controlType==='cfm') row(pn('Supply Air','SA')+' CFM Setpoint','supplyCfmSP','cfm',100);
   else row('Supply Duct Static Pressure Setpoint','staticSP','in. w.c.',0.1);
   if(config.airSystem==='return' && config.includeOa) row(pn('Outside Air','OA')+' CFM Setpoint (Minimum Fresh Air)','oaCfmSP','cfm',50);
@@ -185,6 +186,7 @@ function renderSetpoints(){
       const key = inp.dataset.sp;
       if(key === 'humidityMinSP'){ val = Math.min(val, sp.humidityMaxSP - 10); inp.value = val; }
       else if(key === 'humidityMaxSP'){ val = Math.max(val, sp.humidityMinSP + 10); inp.value = val; }
+      else if(key === 'rampTimeSP'){ val = clamp(Math.round(val) || 60, 30, 120); inp.value = val; }
       sp[key] = val;
     });
   });

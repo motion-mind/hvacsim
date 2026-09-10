@@ -221,6 +221,10 @@ function tick(){
   // model by that small fraction, and their closure never starves the AHU.
   const VAV_MODEL_SHARE = 0.10;
   const blendVav = (frac) => (1 - VAV_MODEL_SHARE) + VAV_MODEL_SHARE * clamp(frac, 0, 2);
+  // VFD fans ramp 0-100% over the configured ramp time (30-120 s); non-VFD
+  // starter fans reach full speed in 5 s (20 %/s).
+  const fanRampSlew = 100 / clamp(sp.rampTimeSP || 60, 30, 120);
+  const starterFanSlew = 20;
   let drift = 0;
   if(age >= 10){ drift = Math.sin(window.simTickCount * 0.05) * 4; }
 
@@ -515,7 +519,7 @@ function tick(){
   if(config.ductType==='dual' && config.dualDuctIndependent){
     let hotOutPct = sim.pid.hotDeckFlow.update(sp.supplyCfmSP / 2, sim.hotDeckCfm||0, DT, false);
     let hotTargetSpeed = hdStartCmd ? (sim.overrideHotDeckFanSpeed ? sim.overrideHotDeckFanSpeedVal : clamp(Math.max(hotOutPct,25),25,100)) : 0;
-    const hotDeckFanSlew = config.driveType==='vfd' ? 100 / 120 : 20;
+    const hotDeckFanSlew = config.driveType==='vfd' ? fanRampSlew : starterFanSlew;
     sim.hotDeckFanPct = slew(sim.hotDeckFanPct, hotTargetSpeed, hotDeckFanSlew);
     sim.hotDeckFans.forEach(f=>{ f.run = hdStartCmd && !f.fail; });
     const hotFanHeat = hdStartCmd ? clamp((sim.hotDeckFanPct/100)*1.0,0,2.5) : 0;
@@ -685,13 +689,13 @@ function tick(){
     } else { outPct = sim.pid.staticP.update(sp.staticSP, (sim.staticFb2of3 !== undefined ? sim.staticFb2of3 : sim.staticPressureDisplay), DT, false); }
     let targetPct = sfStartCmd ? (sim.overrideSupplyFanSpeed ? sim.overrideSupplyFanSpeedVal : clamp(Math.max(outPct,25),25,100)) : 0;
     if(isWireDisconnected('Supply Fan Drive Speed Command')) targetPct = 0;
-    sim.supplyFanPct = slew(sim.supplyFanPct, targetPct, 100 / 120);
+    sim.supplyFanPct = slew(sim.supplyFanPct, targetPct, fanRampSlew);
     const sdTargetVfd = sim.overrideSupplyDamper ? (sim.overrideSupplyDamperVal || 0) : (sfStartCmd ? 100 : 0);
     sim.supplyDamperPos = slew(sim.supplyDamperPos, sdTargetVfd, DAMPER_SLEW);
     supplyFlowFraction = sim.supplyFanPct/100;
   } else {
     let targetPct = sfStartCmd ? (sim.overrideSupplyFanSpeed ? sim.overrideSupplyFanSpeedVal : 100) : 0;
-    sim.supplyFanPct = slew(sim.supplyFanPct, targetPct, 20);
+    sim.supplyFanPct = slew(sim.supplyFanPct, targetPct, starterFanSlew);
     let damperOut;
     if(!sfStartCmd){ sim.pid.supplyDamper.reset(); damperOut = 0; }
     else if(config.controlType==='cfm'){
@@ -948,7 +952,7 @@ function tick(){
       targetReturnPct = rfStartCmd ? (sim.overrideReturnFanSpeed ? sim.overrideReturnFanSpeedVal : clamp(Math.max(outPct,25),25,100)) : 0;
     } else { targetReturnPct = rfStartCmd ? (sim.overrideReturnFanSpeed ? sim.overrideReturnFanSpeedVal : 100) : 0; }
     if(isWireDisconnected('Return Fan Drive Speed Command')) targetReturnPct = 0;
-    const returnFanSlew = config.driveType==='vfd' ? 100 / 90 : 20;
+    const returnFanSlew = config.driveType==='vfd' ? fanRampSlew : starterFanSlew;
     sim.returnFanPct = slew(sim.returnFanPct, targetReturnPct, returnFanSlew);
     sim.returnFans.forEach(f=>{ f.run = rfStartCmd && !f.fail; });
     sim.returnCfm = rfStartCmd ? (0.75 * sp.maxCfmSP) * (sim.returnFanPct/100) * capFracReturn * (0.97+0.06*Math.random()) * flowDegradation : 0;

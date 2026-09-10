@@ -141,6 +141,7 @@ let config = {
 
 let sp = {
   supplyCfmSP:24800, maxCfmSP:30000, staticSP:1.6, oaCfmSP:8500, diffCfmSP:16300,
+  rampTimeSP:60,
   preheatDischargeSP:50, coolingDischargeSP:55, hotDeckSP:95,
   reheatSpaceSP:72, humidityMinSP:38, humidityMaxSP:55, freezestatSP:37, highStaticSP:4.5,
   minOaDamperPos:20, aquastatSP:110, boosterPumpStartPct:5, hotDeckCfmSP:4000, hotDeckOaCfmSP:800

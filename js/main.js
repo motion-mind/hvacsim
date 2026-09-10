@@ -441,6 +441,8 @@ document.getElementById('btnRandomizeCfg').addEventListener('click', ()=>{
   config.vavsExhaustCount = Math.random() < 0.5 ? 0 : Math.floor(rnd(1, 4));
   config.fcuCount = Math.random() < 0.5 ? 0 : Math.floor(rnd(1, 4));
   if(config.vavCount===0 && config.vavsExhaustCount===0 && config.fcuCount===0) config.vavCount = 3;
+  // VFD ramp time (Ramp Speed), 30-120 s to full speed, randomized with the setup
+  sp.rampTimeSP = Math.max(30, Math.round(rnd(30, 120)));
   renderSetupGrid();
 });
 document.getElementById('btnSaveSetup').addEventListener('click', saveSetup);
