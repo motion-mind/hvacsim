@@ -83,7 +83,7 @@ function buildSimState(){
     preheatValve:0, coil1Valve:0, coil2Valve:0, reheatValve:0, humidValve:0, hotDeckValve:0,
     oaDamperPos:0, raDamperPos:100, fireDamperPos:0, supplyDamperPos:0, eaDamperPos:0, exhaustCfm:0,
     coldDeckDamperPos:0, hotDeckDamperPos:0,
-    spBefore:0, spBeforeDisplay:0, sp23Cold:0, sp23Hot:0,
+    spBefore:0, spBeforeDisplay:0, sp23Cold:0, sp23Hot:0, spDeckCold:0, spDeckHot:0,
     staticPressureDisplay:0, staticFb2of3:0,
     hotOaDamperPos:0, hotRaDamperPos:100, hotOaCfm:0, hotMaTemp:72,
     supplyFanPct:0, returnFanPct:0, hotDeckFanPct:0,
@@ -882,21 +882,26 @@ function tick(){
     sim.spBeforeDisplay = activeFaults.staticPressureSensorDrift ? Math.max(0, sim.spBefore - 0.6) : sim.spBefore;
   }
 
-  // Downstream deck static (sensors AFTER the deck dampers, ~2/3 down the
-  // duct). A downstream reading can never exceed the fan-discharge (main) duct
-  // static — moving more air costs a little friction, and an idle deck sits
-  // lower — so each deck sensor is derived from the fan static.
+  // Downstream static readings. Two distinct sensors per path:
+  //  - deck discharge static (right after the deck damper) — the higher one
+  //  - 2/3-duct static, further down the run — always lower than the deck
+  //    discharge, and therefore strictly lower than the fan-discharge static.
+  // A shut deck moves no air, so its readings fall to 0.
   if(config.ductType==='dual'){
     const deckDesign = Math.max(sp.maxCfmSP / 2, 1);
     const coldFrac = clamp(sim.supplyCfm / deckDesign, 0, 1.5);
     const hotFrac  = clamp((sim.hotDeckCfm || 0) / deckDesign, 0, 1.5);
     const fanSP = sim.spBeforeDisplay !== undefined ? sim.spBeforeDisplay : (config.dualDuctIndependent ? (sim.sp23 || 0) : (sim.spBefore || 0));
-    // A deck that is shut moves no air, so its 2/3 static falls to 0; an open
-    // deck approaches the fan static as it moves more air.
     const cf = clamp(0.95 * Math.min(coldFrac, 1), 0, 0.95);
     const hf = clamp(0.95 * Math.min(hotFrac, 1), 0, 0.95);
-    sim.sp23Cold = clamp(fanSP * cf, 0, sp.highStaticSP);
-    sim.sp23Hot  = clamp(fanSP * hf, 0, sp.highStaticSP);
+    sim.spDeckCold = clamp(fanSP * cf, 0, sp.highStaticSP);
+    sim.spDeckHot  = clamp(fanSP * hf, 0, sp.highStaticSP);
+    sim.sp23Cold = clamp(sim.spDeckCold * 0.8, 0, sp.highStaticSP); // 2/3 down the duct
+    sim.sp23Hot  = clamp(sim.spDeckHot  * 0.8, 0, sp.highStaticSP);
+  } else {
+    // Single duct: fan-discharge static is highest; the 2/3 sensor reads lower.
+    const fanSP = sim.spBeforeDisplay !== undefined ? sim.spBeforeDisplay : (sim.sp23 || 0);
+    sim.sp23 = clamp(fanSP * 0.8, 0, sp.highStaticSP);
   }
 
   // Feedback for static-pressure control is the 2/3-duct static reading shown

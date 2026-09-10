@@ -77,24 +77,29 @@ function renderStaticReadings(){
   const el = document.getElementById('staticReadings');
   if(!el) return;
   const indep = config.ductType==='dual' && config.dualDuctIndependent;
-  const spAfter = sim.sp23 !== undefined ? sim.sp23 : sp.highStaticSP * 0.9;
   let html = '';
   if(indep){
-    html += readingCard('Main Duct SP (Before DPR)', '\u2014', '', false, 'Dedicated fans per deck — deck static is measured downstream of each deck damper');
-    html += readingCard('Cold Deck SP (After DPR)', fmt(sim.sp23Cold !== undefined ? sim.sp23Cold : spAfter, 2), 'in. w.c.', false);
-    html += readingCard('Hot Deck SP (After DPR)', fmt(sim.sp23Hot !== undefined ? sim.sp23Hot : spAfter, 2), 'in. w.c.', false);
+    html += readingCard('Main Duct SP (Before DPR)', '\u2014', '', false, 'Dedicated fans per deck — no common main-duct sensor');
+    html += readingCard('Cold Deck SP (After DPR)', fmt(sim.spDeckCold || 0, 2), 'in. w.c.', false);
+    html += readingCard('Hot Deck SP (After DPR)', fmt(sim.spDeckHot || 0, 2), 'in. w.c.', false);
+    html += readingCard('Cold Deck SP (2/3 Duct)', fmt(sim.sp23Cold || 0, 2), 'in. w.c.', false);
+    html += readingCard('Hot Deck SP (2/3 Duct)', fmt(sim.sp23Hot || 0, 2), 'in. w.c.', false);
   } else {
     const spb = sim.spBeforeDisplay !== undefined ? sim.spBeforeDisplay : (sim.spBefore || 0);
     html += readingCard('Main Duct SP (Before DPR)', fmt(spb, 2), 'in. w.c.', spb > sp.highStaticSP,
-      'Static pressure upstream of the supply output dampers. Rises and trips the HI-PRS safety if the output dampers close while the fan is running.');
+      'Static at the fan discharge, upstream of the supply output dampers. Rises and trips HI-PRS if the output dampers close while the fan runs.');
     if(config.ductType==='dual'){
-      html += readingCard('Cold Deck SP (After DPR)', fmt(sim.sp23Cold !== undefined ? sim.sp23Cold : spAfter, 2), 'in. w.c.', false,
-        'Duct static on the cold deck, downstream of the deck damper');
-      html += readingCard('Hot Deck SP (After DPR)', fmt(sim.sp23Hot !== undefined ? sim.sp23Hot : spAfter, 2), 'in. w.c.', false,
-        'Duct static on the hot deck, downstream of the deck damper');
+      html += readingCard('Cold Deck SP (After DPR)', fmt(sim.spDeckCold || 0, 2), 'in. w.c.', false,
+        'Cold deck static at the deck discharge (after the deck damper)');
+      html += readingCard('Hot Deck SP (After DPR)', fmt(sim.spDeckHot || 0, 2), 'in. w.c.', false,
+        'Hot deck static at the deck discharge (after the deck damper)');
+      html += readingCard('Cold Deck SP (2/3 Duct)', fmt(sim.sp23Cold || 0, 2), 'in. w.c.', false,
+        'Cold deck static 2/3 down the duct — lower than the deck discharge');
+      html += readingCard('Hot Deck SP (2/3 Duct)', fmt(sim.sp23Hot || 0, 2), 'in. w.c.', false,
+        'Hot deck static 2/3 down the duct — lower than the deck discharge');
     } else {
-      html += readingCard('Duct SP (After DPR)', fmt(spAfter, 2), 'in. w.c.', false,
-        'Duct static reading 2/3 down the supply duct, downstream of the output dampers');
+      html += readingCard('Duct SP (2/3 Duct)', fmt(sim.sp23 || 0, 2), 'in. w.c.', false,
+        'Supply duct static 2/3 down the run — lower than the fan discharge');
     }
   }
   el.innerHTML = html;
