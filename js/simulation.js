@@ -795,20 +795,23 @@ function tick(){
       const hotPath  = hotF  * Math.max(0, hotDem);
       const fanOut = sim.supplyCfm; // fan output before the deck dampers
       const pathTotal = coldPath + hotPath;
-      if(pathTotal < 0.002){ sim.supplyCfm = 0; sim.hotDeckCfm = 0; }
+      const pathOpen = (coldF + hotF) > 0.05; // is any deck path physically open?
+      if(!pathOpen){ sim.supplyCfm = 0; sim.hotDeckCfm = 0; }
       else {
-        // Demand-based split, but never below the AHU's minimum supply flow:
-        // ~25% of rated design still has to move even when every VAV box is
-        // satisfied (space temperature maintenance, ventilation, unseen common
-        // areas), routed through whichever deck path is open. The fan cannot
-        // deliver more than its own output.
+        // Split by demand; if every box is satisfied/closed (demand ~0) fall
+        // back to splitting by deck damper position so the minimum flow still
+        // has somewhere to go.
+        const shareCold = (pathTotal >= 0.002) ? (coldPath / pathTotal) : (coldF / (coldF + hotF));
+        const shareHot  = (pathTotal >= 0.002) ? (hotPath  / pathTotal) : (hotF  / (coldF + hotF));
+        // Minimum supply flow: ~25% of rated design moves even when every VAV
+        // box is satisfied/closed (temperature maintenance, ventilation,
+        // unseen common areas), capped at what the fan can physically deliver.
         let totalFlow = fanOut * clamp(Math.max(pathTotal, 0.05), 0, 1);
         const minTotal = 0.25 * sp.maxCfmSP;
         if(totalFlow < minTotal) totalFlow = Math.min(minTotal, fanOut);
         if(totalFlow > fanOut) totalFlow = fanOut;
-        const delivered = totalFlow;
-        sim.supplyCfm  = delivered * (coldPath / pathTotal);
-        sim.hotDeckCfm = delivered * (hotPath  / pathTotal);
+        sim.supplyCfm  = totalFlow * shareCold;
+        sim.hotDeckCfm = totalFlow * shareHot;
       }
     }
   } else { sim.coldDeckDamperPos = 0; sim.hotDeckDamperPos = 0; }
@@ -866,20 +869,14 @@ function tick(){
       cmdClosed = sim.vav.every((b, i) => b.type !== 'fcu' &&
         (activeFaults['vavPowerLost' + (i+1)] || (activeFaults['vavDamperStuck' + (i+1)] !== undefined && activeFaults['vavDamperStuck' + (i+1)] < 20)));
     }
-    let deadhead = false;
-    if(wantRunCold && sim.supplyFanPct > 55 && rawOpen < 0.015){
-      sim.deadheadTimer = (sim.deadheadTimer || 0) + DT;
-      if(sim.deadheadTimer > 6) deadhead = true;
-    } else { sim.deadheadTimer = 0; }
-    // Fan-discharge (main duct) static must always read >= the downstream 2/3
-    // sensors. In static-pressure control the 2/3 reading is the controller
-    // feedback, so the fan static is derived above it (duct friction drop);
-    // in CFM control it follows the existing duct-static model.
+    // VAV throttling / satisfied boxes must never trip the unit — the AHU keeps
+    // its minimum flow. Only a physically commanded output-damper closure
+    // pressurizes the duct and trips HI-PRS.
+    const pressurize = cmdClosed;
     const baseStatic = (config.controlType === 'static' && sim.sp23 !== undefined)
       ? clamp(sim.sp23 / 0.8, 0, sp.highStaticSP)
       : clamp(sim.staticPressure || 0, 0, sp.highStaticSP * 0.9);
     const restFrac = clamp((0.25 - rawOpen) / 0.25, 0, 1); // 1 = effectively shut
-    const pressurize = cmdClosed || deadhead;
     const spTarget = wantRunCold ? baseStatic + (pressurize ? 4.6*Math.pow(restFrac, 1.3) : 0) : 0;
     sim.spBefore = clamp(slew(sim.spBefore || 0, spTarget, 0.4), 0, sp.highStaticSP + 2);
     sim.spBeforeDisplay = activeFaults.staticPressureSensorDrift ? Math.max(0, sim.spBefore - 0.6) : sim.spBefore;
