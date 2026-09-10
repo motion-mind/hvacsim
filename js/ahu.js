@@ -10,9 +10,11 @@ function renderFlowReadings(){
   const el = document.getElementById('flowReadings');
   if(!el) return;
   let html = '';
+  const sharedDualFan = config.ductType==='dual' && !config.dualDuctIndependent;
+  const totalSupplyCfm = sharedDualFan ? (sim.supplyCfm + (sim.hotDeckCfm || 0)) : sim.supplyCfm;
   html += readingCard(
     config.ductType==='dual' && config.dualDuctIndependent ? 'Cold Deck CFM' : 'Supply Air CFM',
-    fmt(sim.supplyCfm,0), 'cfm', false, 'Supply Air (SA) CFM');
+    fmt(totalSupplyCfm,0), 'cfm', false, 'Supply Air (SA) CFM (fan total)');
   if(config.ductType==='dual' && config.dualDuctIndependent){
     html += readingCard('Hot Deck CFM', fmt(sim.hotDeckCfm,0), 'cfm', false, 'Hot Deck CFM (Independent Fan)');
   }

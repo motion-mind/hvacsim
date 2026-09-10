@@ -475,16 +475,6 @@ function buildSchematicCore(){
     }
   }
 
-  if(!independent){
-    const sf = items.find(it => it.id === 'supplyfan');
-    if(sf){
-      const spbX = sf.cx + sf.w/2 + 34;
-      s += '<g id="readout_spBefore"></g>';
-      window._schemSpBeforeX = spbX;
-      window._schemSpBeforeY = coldY;
-    } else { window._schemSpBeforeX = undefined; }
-  } else { window._schemSpBeforeX = undefined; }
-
   svg.innerHTML = s;
   window._schemItems = items;
   window._schemHotItems = hotItems;
@@ -571,7 +561,7 @@ function updateSchematicReadouts(){
         lines = null;
       }
       else if(it.id==='filter') lines=['FILTER', activeFaults.dirtyFilter? 'DIRTY':'CLEAN'];
-      else if(it.id==='supplyfan') lines=[(config.dualDuctIndependent?'CD FAN ':'SF ')+fmt(sim.supplyFanPct,0)+'%', fmt(sim.supplyCfm,0)+' CFM', 'SP '+fmt(config.dualDuctIndependent ? (sim.sp23||0) : (sim.spBeforeDisplay||0), 2)+'"'];
+      else if(it.id==='supplyfan'){ const sharedDualFan = config.ductType==='dual' && !config.dualDuctIndependent; const fanCfm = sharedDualFan ? (sim.supplyCfm + (sim.hotDeckCfm || 0)) : sim.supplyCfm; lines=[(config.dualDuctIndependent?'CD FAN ':'SF ')+fmt(sim.supplyFanPct,0)+'%', fmt(fanCfm,0)+' CFM', 'SP '+fmt(config.dualDuctIndependent ? (sim.sp23||0) : (sim.spBeforeDisplay||0), 2)+'"']; }
       else if(it.id==='humid'){ const effRh = sim.W_supply ? rhFromW(sim.raTemp || 72, sim.W_supply) * 100 : sim.saRH * 100; lines=['SA-RH '+fmt(effRh,0)+'%','VLV '+fmt(sim.humidValve,0)+'%']; }
       else if(it.id==='discharge'){ const effRh = sim.W_supply ? rhFromW(sim.raTemp || 72, sim.W_supply) * 100 : sim.saRH * 100; const deckSp = config.ductType==='dual' ? (sim.spDeckCold || 0) : (sim.spBeforeDisplay || 0); lines=[(config.ductType==='dual'?'CD-SAT ':'SAT ')+fmt(config.ductType==='dual'?sim.coldDeckTemp:sim.satDisplayTemp,1)+'\u00b0F', 'SA-RH '+fmt(effRh,0)+'%', fmt(sim.supplyCfm,0)+' CFM', 'SP '+fmt(deckSp, 2)+'"']; accent='#2b6cb0'; }
       else if(it.id==='hotOaIntake') lines=['OAT '+fmt(sim.oat,1)+'\u00b0F','OAH '+fmt(sim.oaRH*100,0)+'%','OA '+fmt(sim.hotOaCfm,0)+' CFM'];
@@ -699,15 +689,6 @@ function updateSchematicReadouts(){
   if(spStubHotEl && window._schemSpStubHotCx !== undefined){
     spStubHotEl.innerHTML = bubbleDown(window._schemSpStubHotCx, window._schemSpStubHotY + 30, 45, 'SP (2/3 Duct)', 
       [hotSpStr+'" w.c.'], null, 0);
-  }
-
-  // Pre-damper (main duct) static pressure — upstream of the supply output dampers.
-  const spBeforeEl = document.getElementById('readout_spBefore');
-  if(spBeforeEl && window._schemSpBeforeX !== undefined){
-    const spbV = sim.spBeforeDisplay !== undefined ? sim.spBeforeDisplay : (sim.spBefore || 0);
-    const spbTrip = spbV > sp.highStaticSP;
-    spBeforeEl.innerHTML = bubble(window._schemSpBeforeX, window._schemSpBeforeY-48, 34, 'Main Duct SP (Before Output Dampers)',
-      [fmt(spbV, 2)+'" w.c.'], spbTrip ? '#e5484d' : '#4fd1c5', 0);
   }
 
   // High static trip indicators
