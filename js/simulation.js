@@ -891,8 +891,10 @@ function tick(){
     const coldFrac = clamp(sim.supplyCfm / deckDesign, 0, 1.5);
     const hotFrac  = clamp((sim.hotDeckCfm || 0) / deckDesign, 0, 1.5);
     const fanSP = sim.spBeforeDisplay !== undefined ? sim.spBeforeDisplay : (config.dualDuctIndependent ? (sim.sp23 || 0) : (sim.spBefore || 0));
-    const cf = clamp(0.4 + 0.55 * Math.min(coldFrac, 1), 0.4, 0.95);
-    const hf = clamp(0.4 + 0.55 * Math.min(hotFrac, 1), 0.4, 0.95);
+    // A deck that is shut moves no air, so its 2/3 static falls to 0; an open
+    // deck approaches the fan static as it moves more air.
+    const cf = clamp(0.95 * Math.min(coldFrac, 1), 0, 0.95);
+    const hf = clamp(0.95 * Math.min(hotFrac, 1), 0, 0.95);
     sim.sp23Cold = clamp(fanSP * cf, 0, sp.highStaticSP);
     sim.sp23Hot  = clamp(fanSP * hf, 0, sp.highStaticSP);
   }
