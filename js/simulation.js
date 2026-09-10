@@ -3,6 +3,9 @@
    ============================================================ */
 const DT = 1;
 const DAMPER_SLEW = 100 / 90;
+// A new (0-year) AHU fan can reach 115% of the Maximum Supply Air CFM Rating
+// at 100% speed; age degradation applies on top of this.
+const FAN_OVERCAP = 1.15;
 
 function slew(current, target, maxStepPerSec){
   if(isNaN(target)) return isNaN(current)? 0 : current;
@@ -709,7 +712,7 @@ function tick(){
   let casingLeak = 0;
   if(age >= 50) casingLeak = 0.12;
   else if(age >= 40) casingLeak = 0.06;
-  sim.supplyCfm = wantRun? designCfm*supplyFlowFraction*capFracSupply*(0.97+0.06*Math.random())*flowDegradation*(1-casingLeak) : 0;
+  sim.supplyCfm = wantRun? designCfm*FAN_OVERCAP*supplyFlowFraction*capFracSupply*(0.97+0.06*Math.random())*flowDegradation*(1-casingLeak) : 0;
   if(config.controlType==='static'){
     if(sim.vav && sim.vav.length > 0){
       const vavDprs = sim.vav.filter(b => b.type !== 'fcu' && b.damperPos !== undefined).map(b => b.damperPos);
@@ -773,7 +776,7 @@ function tick(){
       const capFracHot = fanWallCapacityFraction(sim.hotDeckFans);
       const filterDerate = activeFaults.hotDeckDirtyFilter ? 0.75 : 1;
       sim.supplyCfm = sim.supplyCfm * (sim.coldDeckDamperPos/100);
-      sim.hotDeckCfm = (hdStartCmd ? (sp.maxCfmSP / 2)*(sim.hotDeckFanPct/100)*capFracHot*filterDerate*(0.97+0.06*Math.random())*flowDegradation : 0) * (sim.hotDeckDamperPos/100);
+      sim.hotDeckCfm = (hdStartCmd ? (sp.maxCfmSP / 2)*FAN_OVERCAP*(sim.hotDeckFanPct/100)*capFracHot*filterDerate*(0.97+0.06*Math.random())*flowDegradation : 0) * (sim.hotDeckDamperPos/100);
     } else {
       // Single-source (shared fan) dual duct: one fan feeds both decks. Total
       // fan output is throttled by how much supply path is actually open, and
