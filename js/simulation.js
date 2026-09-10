@@ -797,14 +797,16 @@ function tick(){
       const pathTotal = coldPath + hotPath;
       if(pathTotal < 0.002){ sim.supplyCfm = 0; sim.hotDeckCfm = 0; }
       else {
-        // Minimum supply airflow: even when every VAV box is satisfied the AHU
-        // still moves ~25% of its rated flow (space temperature maintenance,
-        // ventilation, unseen common areas), routed through whichever deck path
-        // is open. Only a physical blockage (deck/supply dampers shut) drops
-        // below this.
-        const minThru = (coldF + hotF > 0.05) ? 0.25 : 0;
-        const throughput = clamp(Math.max(pathTotal, minThru), 0.02, 1); // fraction of fan output that flows
-        const delivered = fanOut * throughput;
+        // Demand-based split, but never below the AHU's minimum supply flow:
+        // ~25% of rated design still has to move even when every VAV box is
+        // satisfied (space temperature maintenance, ventilation, unseen common
+        // areas), routed through whichever deck path is open. The fan cannot
+        // deliver more than its own output.
+        let totalFlow = fanOut * clamp(Math.max(pathTotal, 0.05), 0, 1);
+        const minTotal = 0.25 * sp.maxCfmSP;
+        if(totalFlow < minTotal) totalFlow = Math.min(minTotal, fanOut);
+        if(totalFlow > fanOut) totalFlow = fanOut;
+        const delivered = totalFlow;
         sim.supplyCfm  = delivered * (coldPath / pathTotal);
         sim.hotDeckCfm = delivered * (hotPath  / pathTotal);
       }
@@ -865,11 +867,17 @@ function tick(){
         (activeFaults['vavPowerLost' + (i+1)] || (activeFaults['vavDamperStuck' + (i+1)] !== undefined && activeFaults['vavDamperStuck' + (i+1)] < 20)));
     }
     let deadhead = false;
-    if(wantRunCold && sim.supplyFanPct > 55 && rawOpen < 0.04){
+    if(wantRunCold && sim.supplyFanPct > 55 && rawOpen < 0.015){
       sim.deadheadTimer = (sim.deadheadTimer || 0) + DT;
       if(sim.deadheadTimer > 6) deadhead = true;
     } else { sim.deadheadTimer = 0; }
-    const baseStatic = clamp(sim.staticPressure || 0, 0, sp.highStaticSP*0.9);
+    // Fan-discharge (main duct) static must always read >= the downstream 2/3
+    // sensors. In static-pressure control the 2/3 reading is the controller
+    // feedback, so the fan static is derived above it (duct friction drop);
+    // in CFM control it follows the existing duct-static model.
+    const baseStatic = (config.controlType === 'static' && sim.sp23 !== undefined)
+      ? clamp(sim.sp23 / 0.8, 0, sp.highStaticSP)
+      : clamp(sim.staticPressure || 0, 0, sp.highStaticSP * 0.9);
     const restFrac = clamp((0.25 - rawOpen) / 0.25, 0, 1); // 1 = effectively shut
     const pressurize = cmdClosed || deadhead;
     const spTarget = wantRunCold ? baseStatic + (pressurize ? 4.6*Math.pow(restFrac, 1.3) : 0) : 0;
@@ -878,15 +886,18 @@ function tick(){
   }
 
   // Downstream deck static (sensors AFTER the deck dampers, ~2/3 down the
-  // duct): tracks how much flow each deck is actually moving, so a deck that
-  // inherits the other deck's airflow reads higher static.
+  // duct). A downstream reading can never exceed the fan-discharge (main) duct
+  // static — moving more air costs a little friction, and an idle deck sits
+  // lower — so each deck sensor is derived from the fan static.
   if(config.ductType==='dual'){
     const deckDesign = Math.max(sp.maxCfmSP / 2, 1);
-    const coldFlowRat = clamp(sim.supplyCfm / deckDesign, 0, 2);
-    const hotFlowRat  = clamp((sim.hotDeckCfm || 0) / deckDesign, 0, 2);
-    const spBase23 = sim.sp23 !== undefined ? sim.sp23 : sp.highStaticSP * 0.9;
-    sim.sp23Cold = clamp(spBase23 * (0.3 + 0.7 * coldFlowRat), 0, sp.highStaticSP);
-    sim.sp23Hot  = clamp(spBase23 * (0.3 + 0.7 * hotFlowRat),  0, sp.highStaticSP);
+    const coldFrac = clamp(sim.supplyCfm / deckDesign, 0, 1.5);
+    const hotFrac  = clamp((sim.hotDeckCfm || 0) / deckDesign, 0, 1.5);
+    const fanSP = sim.spBeforeDisplay !== undefined ? sim.spBeforeDisplay : (config.dualDuctIndependent ? (sim.sp23 || 0) : (sim.spBefore || 0));
+    const cf = clamp(0.4 + 0.55 * Math.min(coldFrac, 1), 0.4, 0.95);
+    const hf = clamp(0.4 + 0.55 * Math.min(hotFrac, 1), 0.4, 0.95);
+    sim.sp23Cold = clamp(fanSP * cf, 0, sp.highStaticSP);
+    sim.sp23Hot  = clamp(fanSP * hf, 0, sp.highStaticSP);
   }
 
   // Feedback for static-pressure control is the 2/3-duct static reading shown
